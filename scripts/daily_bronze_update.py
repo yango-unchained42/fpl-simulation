@@ -232,26 +232,26 @@ def upload_table(supabase, table_name: str, df: pl.DataFrame) -> int:
         logger.info(f"  ⏭️  Skipping {table_name} (empty)")
         return 0
 
-    # Truncate table to avoid duplicates (use CLI if available)
-    token = os.getenv("SUPABASE_ACCESS_TOKEN")
-    if token:
-        try:
-            result = subprocess.run(
-                [
-                    "supabase",
-                    "db",
-                    "query",
-                    "--linked",
-                    f"TRUNCATE {table_name} CASCADE;",
-                ],
-                capture_output=True,
-                text=True,
-                env={**os.environ, "SUPABASE_ACCESS_TOKEN": token},
-            )
-            if result.returncode == 0:
-                logger.info(f"  🗑️  Truncated {table_name}")
-        except Exception:
-            pass  # Continue without truncate if CLI fails
+    # Truncate/delete current season data before reload
+    season = df["season"][0] if "season" in df.columns else SEASON
+    try:
+        # Try REST API delete by season (safer than TRUNCATE)
+        supabase.table(table_name).delete().eq("season", season).execute()
+        logger.info(f"  🗑️  Cleared {table_name} for season {season}")
+    except Exception as e:
+        logger.warning(f"  Could not clear {table_name}: {e}")
+        # Fallback: try supabase CLI
+        token = os.getenv("SUPABASE_ACCESS_TOKEN")
+        if token:
+            try:
+                subprocess.run(
+                    ["supabase", "db", "query", "--linked",
+                     f"DELETE FROM {table_name} WHERE season = '{season}';"],
+                    capture_output=True, text=True,
+                    env={**os.environ, "SUPABASE_ACCESS_TOKEN": token},
+                )
+            except FileNotFoundError:
+                pass  # CLI not available — upsert will overwrite existing rows
 
     # Filter to only columns that exist in Supabase schema
     valid_cols = get_table_columns(supabase, table_name)
