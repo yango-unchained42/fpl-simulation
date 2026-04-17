@@ -223,10 +223,8 @@ def populate_match_mapping(client: Any) -> bool:
     """Populate match_mapping using silver_team_mapping for ID resolution."""
     logger.info("Populating match_mapping...")
 
-    # Clear existing data
-    for season in ["2021-22", "2022-23", "2023-24", "2024-25", "2025-26"]:
-        client.table("silver_match_mapping").delete().eq("season", season).execute()
-    logger.info("  Cleared existing data")
+    # Skip DELETE — rely on upsert to overwrite existing records
+    logger.info("  Using upsert (no pre-delete needed)")
 
     # Load team mapping lookup ONCE
     team_lookup = load_team_mapping_lookup(client)

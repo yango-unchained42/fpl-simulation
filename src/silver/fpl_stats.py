@@ -54,14 +54,17 @@ def _truncate_table(client: Any, table_name: str) -> None:
         logger.warning(f"  No SUPABASE_ACCESS_TOKEN — skipping truncate for {table_name}")
         return
 
-    result = subprocess.run(
-        ["supabase", "db", "query", "--linked", f"TRUNCATE {table_name} CASCADE;"],
-        capture_output=True,
-        text=True,
-        env={**os.environ, "SUPABASE_ACCESS_TOKEN": token},
-    )
-    if result.returncode != 0:
-        logger.warning(f"  Truncate failed for {table_name}: {result.stderr}")
+    try:
+        result = subprocess.run(
+            ["supabase", "db", "query", "--linked", f"TRUNCATE {table_name} CASCADE;"],
+            capture_output=True,
+            text=True,
+            env={**os.environ, "SUPABASE_ACCESS_TOKEN": token},
+        )
+        if result.returncode != 0:
+            logger.warning(f"  Truncate failed for {table_name}: {result.stderr}")
+    except FileNotFoundError:
+        logger.debug(f"  supabase CLI not available — skipping truncate for {table_name}")
     else:
         logger.info(f"  Truncated {table_name}")
 
@@ -137,17 +140,16 @@ def update_fpl_fantasy_stats(client: Any, season: str = CURRENT_SEASON) -> bool:
 
 # Columns for silver_fpl_player_stats
 PLAYER_STATS_COLS = [
-    "player_id", "season", "gameweek", "team_id", "position", "position_id",
-    "game_id", "total_points", "goals_scored", "assists", "clean_sheets",
+    "season", "gameweek", "unified_player_id", "match_id",
+    "total_points", "goals_scored", "assists", "clean_sheets",
     "goals_conceded", "starts", "minutes", "expected_goals", "expected_assists",
     "expected_goal_involvements", "expected_goals_conceded",
     "yellow_cards", "red_cards", "own_goals", "penalties_saved",
     "penalties_missed", "bonus", "bps", "influence", "creativity",
     "threat", "ict_index", "tackles", "clearances_blocks_interceptions",
     "recoveries", "defensive_contribution", "saves", "was_home",
-    "opponent_team_id", "fixture_id", "kickoff_time", "home_score", "away_score",
-    "data_quality_score", "is_incomplete", "missing_fields",
-    "unified_player_id", "match_id",
+    "kickoff_time", "team_h_score", "team_a_score",
+    "data_quality_score", "is_incomplete",
 ]
 
 
@@ -193,17 +195,25 @@ def update_fpl_player_stats(client: Any, season: str = CURRENT_SEASON) -> bool:
             if col in rec:
                 filtered[col] = rec[col]
 
+        # Map bronze column names to silver
+        if "round" in rec and "gameweek" not in filtered:
+            filtered["gameweek"] = rec["round"]
+        if "element" in rec and "unified_player_id" not in filtered:
+            pass  # handled below via UUID lookup
+
         # Resolve UUIDs
         if player_id:
             filtered["unified_player_id"] = player_lookup.get((season, int(player_id)))
         if fixture_id:
             filtered["match_id"] = match_lookup.get((season, int(fixture_id)))
-            filtered["fixture_id"] = fixture_id
 
-        # Map scores
-        filtered["home_score"] = rec.get("team_h_score")
-        filtered["away_score"] = rec.get("team_a_score")
+        # Use actual column names from DB (team_h_score, team_a_score)
+        if "team_h_score" not in filtered:
+            filtered["team_h_score"] = rec.get("team_h_score")
+        if "team_a_score" not in filtered:
+            filtered["team_a_score"] = rec.get("team_a_score")
         filtered["season"] = season
+        filtered["source"] = "fpl"
 
         # Clean and append
         filtered.pop("element", None)

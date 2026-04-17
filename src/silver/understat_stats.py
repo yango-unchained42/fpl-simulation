@@ -49,14 +49,17 @@ def _truncate_table(client: Any, table_name: str) -> None:
     if not token:
         return
 
-    result = subprocess.run(
-        ["supabase", "db", "query", "--linked", f"TRUNCATE {table_name} CASCADE;"],
-        capture_output=True,
-        text=True,
-        env={**os.environ, "SUPABASE_ACCESS_TOKEN": token},
-    )
-    if result.returncode != 0:
-        logger.warning(f"  Truncate failed for {table_name}: {result.stderr}")
+    try:
+        result = subprocess.run(
+            ["supabase", "db", "query", "--linked", f"TRUNCATE {table_name} CASCADE;"],
+            capture_output=True,
+            text=True,
+            env={**os.environ, "SUPABASE_ACCESS_TOKEN": token},
+        )
+        if result.returncode != 0:
+            logger.warning(f"  Truncate failed for {table_name}: {result.stderr}")
+    except FileNotFoundError:
+        logger.debug(f"  supabase CLI not available — skipping truncate for {table_name}")
 
 
 def update_understat_player_stats(
@@ -105,25 +108,19 @@ def update_understat_player_stats(
         if game_id:
             match_id = match_lookup.get((season, int(game_id)))
 
-        filtered = {
-            "unified_player_id": unified_id,
-            "match_id": match_id,
-            "season": season,
-            "minutes": rec.get("minutes"),
-            "goals": rec.get("goals"),
-            "xg": rec.get("xg"),
-            "assists": rec.get("assists"),
-            "xa": rec.get("xa"),
-            "shots": rec.get("shots"),
-            "key_passes": rec.get("key_passes"),
-            "xg_chain": rec.get("xg_chain"),
-            "xg_buildup": rec.get("xg_buildup"),
-            "position": rec.get("position"),
-        }
+        # Pass through all bronze columns + UUID resolution
+        filtered = dict(rec)  # Copy all fields
+        filtered["unified_player_id"] = unified_id
+        filtered["match_id"] = match_id
+        filtered["season"] = season
+
+        # Clean up fields that shouldn't be in silver
+        filtered.pop("updated_at", None)
+        filtered.pop("created_at", None)
 
         # Only include if we have UUID resolution
         if unified_id and match_id:
-            transformed.append(clean_and_flag_record(filtered, category="gw"))
+            transformed.append(filtered)
 
     for i in range(0, len(transformed), BATCH_SIZE):
         client.table("silver_understat_player_stats").upsert(

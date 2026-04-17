@@ -36,14 +36,17 @@ def _truncate_table(client: Any, table_name: str) -> None:
     if not token:
         return
 
-    result = subprocess.run(
-        ["supabase", "db", "query", "--linked", f"TRUNCATE {table_name} CASCADE;"],
-        capture_output=True,
-        text=True,
-        env={**os.environ, "SUPABASE_ACCESS_TOKEN": token},
-    )
-    if result.returncode != 0:
-        logger.warning(f"  Truncate failed for {table_name}: {result.stderr}")
+    try:
+        result = subprocess.run(
+            ["supabase", "db", "query", "--linked", f"TRUNCATE {table_name} CASCADE;"],
+            capture_output=True,
+            text=True,
+            env={**os.environ, "SUPABASE_ACCESS_TOKEN": token},
+        )
+        if result.returncode != 0:
+            logger.warning(f"  Truncate failed for {table_name}: {result.stderr}")
+    except FileNotFoundError:
+        logger.debug(f"  supabase CLI not available — skipping truncate for {table_name}")
 
 
 def update_fixtures(client: Any, season: str = CURRENT_SEASON) -> bool:
@@ -98,15 +101,19 @@ def update_fixtures(client: Any, season: str = CURRENT_SEASON) -> bool:
         filtered = {
             "match_id": match_id,
             "season": season,
-            "gameweek": gw,
-            "home_team_id": team_lookup.get((season, home_fpl)) if home_fpl else None,
-            "away_team_id": team_lookup.get((season, away_fpl)) if away_fpl else None,
+            "event": gw,
+            "home_unified_team_id": team_lookup.get((season, home_fpl)) if home_fpl else None,
+            "away_unified_team_id": team_lookup.get((season, away_fpl)) if away_fpl else None,
             "kickoff_time": rec.get("kickoff_time"),
-            "home_score": rec.get("team_h_score"),
-            "away_score": rec.get("team_a_score"),
+            "team_h_score": rec.get("team_h_score"),
+            "team_a_score": rec.get("team_a_score"),
             "finished": rec.get("finished", False),
-            "fpl_fixture_id": fixture_id,
+            "source": "fpl",
+            "started": rec.get("started", False),
         }
+
+        # Remove None values so DB defaults (like BIGSERIAL id) are used
+        filtered = {k: v for k, v in filtered.items() if v is not None}
 
         if match_id:
             transformed.append(filtered)

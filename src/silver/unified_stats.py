@@ -24,14 +24,17 @@ def _truncate_table(client: Any, table_name: str) -> None:
     if not token:
         return
 
-    result = subprocess.run(
-        ["supabase", "db", "query", "--linked", f"TRUNCATE {table_name} CASCADE;"],
-        capture_output=True,
-        text=True,
-        env={**os.environ, "SUPABASE_ACCESS_TOKEN": token},
-    )
-    if result.returncode != 0:
-        logger.warning(f"  Truncate failed for {table_name}: {result.stderr}")
+    try:
+        result = subprocess.run(
+            ["supabase", "db", "query", "--linked", f"TRUNCATE {table_name} CASCADE;"],
+            capture_output=True,
+            text=True,
+            env={**os.environ, "SUPABASE_ACCESS_TOKEN": token},
+        )
+        if result.returncode != 0:
+            logger.warning(f"  Truncate failed for {table_name}: {result.stderr}")
+    except FileNotFoundError:
+        logger.debug(f"  supabase CLI not available — skipping truncate for {table_name}")
 
 
 # Understat columns to pull into unified stats

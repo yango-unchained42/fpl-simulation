@@ -27,6 +27,9 @@ from dotenv import load_dotenv
 
 from src.config import CURRENT_SEASON, get_supabase
 
+# Ensure scripts/ is on path for sibling imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 

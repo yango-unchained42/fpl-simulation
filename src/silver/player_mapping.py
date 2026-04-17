@@ -770,7 +770,7 @@ def build_all_season_mappings() -> pl.DataFrame:
 
     all_mappings = []
 
-    for season in SEASONS:
+    for season in ALL_SEASONS:
         season_mapping = build_season_mappings(season)
         if not season_mapping.is_empty():
             all_mappings.append(season_mapping)
