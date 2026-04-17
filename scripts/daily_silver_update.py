@@ -22,6 +22,7 @@ from typing import Any
 from dotenv import load_dotenv
 from supabase import create_client
 
+from src.config import CURRENT_SEASON
 from src.utils.data_cleaning import clean_and_flag_record
 from src.utils.supabase_utils import fetch_all_paginated
 
@@ -1285,6 +1286,12 @@ def main() -> None:
     from scripts.daily_team_mapping_update import run as run_team_mapping
 
     parser = argparse.ArgumentParser(description="Daily Silver Layer Update")
+    parser.add_argument(
+        "--season",
+        type=str,
+        default=None,
+        help="Season to process (default: from config)",
+    )
     parser.add_argument("--skip-fpl", action="store_true", help="Skip FPL data updates")
     parser.add_argument(
         "--skip-understat", action="store_true", help="Skip Understat updates"
@@ -1306,7 +1313,8 @@ def main() -> None:
         logger.error("SUPABASE_URL not set")
         return
 
-    logger.info("Starting daily Silver layer update...")
+    season = args.season or CURRENT_SEASON
+    logger.info(f"Starting daily Silver layer update for season {season}...")
 
     client = get_supabase()
     updated = False

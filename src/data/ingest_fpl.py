@@ -16,14 +16,18 @@ from typing import Any
 import polars as pl
 import requests
 
+from src.config import (
+    CACHE_TTL_SECONDS,
+    CURRENT_SEASON,
+    FPL_API_BASE,
+    MAX_RETRIES,
+    RAW_DATA_DIR,
+    RETRY_DELAY_SECONDS,
+)
+
 logger = logging.getLogger(__name__)
 
-FPL_API_BASE = "https://fantasy.premierleague.com/api/"
-DATA_DIR = Path("data/raw/fpl")
-CURRENT_SEASON = "2025-26"  # Updated each season
-CACHE_TTL_SECONDS = 3600  # 1 hour default cache TTL
-MAX_RETRIES = 3
-RETRY_DELAY_SECONDS = 2
+DATA_DIR = RAW_DATA_DIR / "fpl"
 
 
 def _season_dir(season: str = CURRENT_SEASON) -> Path:

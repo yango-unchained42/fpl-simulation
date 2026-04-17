@@ -14,19 +14,16 @@ from typing import Any
 
 import polars as pl
 
+from src.config import (
+    ALL_SEASONS,
+    CACHE_TTL_SECONDS,
+    CURRENT_SEASON_UNDERSTAT,
+    RAW_DATA_DIR,
+)
+
 logger = logging.getLogger(__name__)
 
-DATA_DIR = Path("data/raw/understat")
-CACHE_TTL_SECONDS = 3600  # 1 hour — refreshed before each GW
-CURRENT_SEASON = "2025/26"  # Updated each season
-ALL_SEASONS = [
-    "2020/21",
-    "2021/22",
-    "2022/23",
-    "2023/24",
-    "2024/25",
-    "2025/26",
-]
+DATA_DIR = RAW_DATA_DIR / "understat"
 
 
 def _season_dir(season: str) -> Path:
