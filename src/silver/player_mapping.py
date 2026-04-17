@@ -843,36 +843,40 @@ def build_all_season_mappings() -> pl.DataFrame:
 
 
 def upload_to_supabase(mappings: pl.DataFrame) -> int:
-    """Upload mappings to Supabase silver_player_mapping table."""
+    """Upload mappings to Supabase silver_player_mapping table.
+
+    Uses safe deduplication to prevent duplicate (season, fpl_id) entries.
+    """
+    from src.utils.safe_upsert import clean_records_for_upload, deduplicate_by_key
+
     client = get_supabase()
-
-    # Prepare records - handle UUID for unified_player_id
     records = mappings.to_dicts()
-    total = len(records)
 
-    logger.info(f"Uploading {total} player mappings to Supabase...")
+    if not records:
+        return 0
 
-    # Clear the table first to avoid duplicates from new UUIDs being generated
-    # This is safe because we're regenerating all mappings from scratch
-    logger.info("Clearing existing mappings...")
-    client.table("silver_player_mapping").delete().neq(
-        "unified_player_id", "00000000-0000-0000-0000-000000000000"
-    ).execute()
-
-    # Use the existing write_to_supabase function with insert (not upsert since we cleared)
-    success = write_to_supabase(
-        "silver_player_mapping",
-        mappings,
-        client=client,
-        upsert=False,
+    # Deduplicate by (season, fpl_id) — keep highest confidence match
+    records = deduplicate_by_key(
+        records,
+        key_columns=["season", "fpl_id"],
+        score_column="confidence_score",
     )
 
-    if success:
-        logger.info(f"Successfully uploaded {total} player mappings")
-    else:
-        logger.error("Failed to upload player mappings")
-        total = 0
+    # Clean server-managed columns
+    records = clean_records_for_upload(records)
 
+    total = len(records)
+    logger.info(f"Uploading {total} deduplicated player mappings...")
+
+    # Upsert in batches — no delete first
+    for i in range(0, total, 500):
+        batch = records[i : i + 500]
+        try:
+            client.table("silver_player_mapping").upsert(batch).execute()
+        except Exception as e:
+            logger.error(f"  Batch {i // 500} failed: {e}")
+
+    logger.info(f"  Uploaded {total} player mappings")
     return total
 
 
