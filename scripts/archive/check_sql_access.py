@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Drop and recreate match_mapping without constraints."""
 
-from dotenv import load_dotenv
 import os
-from supabase import create_client
+
+from dotenv import load_dotenv
 
 load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")

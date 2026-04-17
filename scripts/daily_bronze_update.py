@@ -19,13 +19,13 @@ import os
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 
 import polars as pl
 import requests
 from dotenv import load_dotenv
 
-from src.config import BATCH_SIZE, CURRENT_SEASON, FPL_API_BASE, get_supabase as _get_supabase
+from src.config import BATCH_SIZE, CURRENT_SEASON, FPL_API_BASE
+from src.config import get_supabase as _get_supabase
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -225,7 +225,6 @@ def upload_table(supabase, table_name: str, df: pl.DataFrame) -> int:
 
     Truncates table before upload to avoid duplicates from multiple runs.
     """
-    import os
     import subprocess
 
     if df.is_empty():
@@ -354,9 +353,9 @@ def update_understat_bronze() -> bool:
 
     try:
         from src.data.ingest_understat import (
+            ingest_understat_match_stats,
             ingest_understat_player_match_stats,
             ingest_understat_shots,
-            ingest_understat_match_stats,
         )
 
         # Only fetch current season

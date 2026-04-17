@@ -10,10 +10,9 @@ import logging
 import uuid
 from typing import Any
 
-import polars as pl
 from dotenv import load_dotenv
 
-from src.data.database import get_supabase_client, read_from_supabase
+from src.data.database import get_supabase_client
 from src.utils.supabase_utils import fetch_seasonal_records
 
 logger = logging.getLogger(__name__)

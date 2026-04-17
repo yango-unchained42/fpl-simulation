@@ -764,7 +764,7 @@ def upload_bronze_understat_mappings(client: Any) -> None:
         players_df = players_df.select(cols_to_keep)
 
         # Clear existing data first to avoid PK conflicts
-        logger.info(f"  🗑️  Clearing existing bronze_understat_player_mappings...")
+        logger.info("  🗑️  Clearing existing bronze_understat_player_mappings...")
         try:
             # Delete all rows (the condition always matches)
             client.table("bronze_understat_player_mappings").delete().execute()

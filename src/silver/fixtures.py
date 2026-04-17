@@ -9,6 +9,7 @@ import logging
 from typing import Any
 
 from src.config import BATCH_SIZE, CURRENT_SEASON
+from src.utils.safe_upsert import truncate_table
 from src.utils.supabase_utils import fetch_all_paginated
 
 logger = logging.getLogger(__name__)
@@ -18,35 +19,14 @@ def _load_team_lookup(client: Any, season: str) -> dict[tuple[str, int], str]:
     """Load (source, source_team_id) → unified_team_id mapping."""
     lookup: dict[tuple[str, int], str] = {}
     for r in fetch_all_paginated(
-        client, "silver_team_mapping",
+        client,
+        "silver_team_mapping",
         select_cols="season,fpl_team_id,unified_team_id",
         filters={"season": season},
     ):
         if r.get("fpl_team_id") and r.get("unified_team_id"):
             lookup[(season, int(r["fpl_team_id"]))] = r["unified_team_id"]
     return lookup
-
-
-def _truncate_table(client: Any, table_name: str) -> None:
-    """Truncate a Silver table before reload."""
-    import os
-    import subprocess
-
-    token = os.getenv("SUPABASE_ACCESS_TOKEN")
-    if not token:
-        return
-
-    try:
-        result = subprocess.run(
-            ["supabase", "db", "query", "--linked", f"TRUNCATE {table_name} CASCADE;"],
-            capture_output=True,
-            text=True,
-            env={**os.environ, "SUPABASE_ACCESS_TOKEN": token},
-        )
-        if result.returncode != 0:
-            logger.warning(f"  Truncate failed for {table_name}: {result.stderr}")
-    except FileNotFoundError:
-        logger.debug(f"  supabase CLI not available — skipping truncate for {table_name}")
 
 
 def update_fixtures(client: Any, season: str = CURRENT_SEASON) -> bool:
@@ -58,14 +38,15 @@ def update_fixtures(client: Any, season: str = CURRENT_SEASON) -> bool:
     # Load match mapping
     match_lookup: dict[tuple[str, int], str] = {}
     for r in fetch_all_paginated(
-        client, "silver_match_mapping",
+        client,
+        "silver_match_mapping",
         select_cols="season,fpl_fixture_id,match_id",
         filters={"season": season},
     ):
         if r.get("fpl_fixture_id") and r.get("match_id"):
             match_lookup[(season, int(r["fpl_fixture_id"]))] = r["match_id"]
 
-    _truncate_table(client, "silver_fixtures")
+    truncate_table(client, "silver_fixtures")
 
     # Fetch bronze fixtures
     all_fixtures = []
@@ -102,8 +83,12 @@ def update_fixtures(client: Any, season: str = CURRENT_SEASON) -> bool:
             "match_id": match_id,
             "season": season,
             "event": gw,
-            "home_unified_team_id": team_lookup.get((season, home_fpl)) if home_fpl else None,
-            "away_unified_team_id": team_lookup.get((season, away_fpl)) if away_fpl else None,
+            "home_unified_team_id": (
+                team_lookup.get((season, home_fpl)) if home_fpl else None
+            ),
+            "away_unified_team_id": (
+                team_lookup.get((season, away_fpl)) if away_fpl else None
+            ),
             "kickoff_time": rec.get("kickoff_time"),
             "team_h_score": rec.get("team_h_score"),
             "team_a_score": rec.get("team_a_score"),

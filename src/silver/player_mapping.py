@@ -26,9 +26,8 @@ import logging
 import polars as pl
 from dotenv import load_dotenv
 
-from src.config import ALL_SEASONS, CURRENT_SEASON
+from src.config import ALL_SEASONS
 from src.data.database import get_supabase_client, write_to_supabase
-from src.silver.player_overrides import get_override_lookup
 from src.utils.name_resolver import (
     build_name_mapping,
     standardize_name,
@@ -40,22 +39,39 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 # ── Matching thresholds ─────────────────────────────────────────────────────
-EXACT_MATCH = 1.0       # Character-perfect name match
+EXACT_MATCH = 1.0  # Character-perfect name match
 HIGH_CONFIDENCE = 0.85  # Strong fuzzy match — very likely correct
 MEDIUM_CONFIDENCE = 0.65  # Reasonable match with team confirmation
-LOW_CONFIDENCE = 0.55   # Weak match — needs position verification
+LOW_CONFIDENCE = 0.55  # Weak match — needs position verification
 MIN_FUZZY_THRESHOLD = 0.40  # Floor — below this, ignore fuzzy match
-LAST_NAME_BOOST = 0.2   # Added when fuzzy match found within same team
+LAST_NAME_BOOST = 0.2  # Added when fuzzy match found within same team
 TRANSFER_CONFIDENCE = 0.9  # Exact name match across teams (transfers)
 
 # Position normalization
 POS_MAP = {
-    "GKP": "GKP", "GK": "GKP", "GOALKEEPER": "GKP", "G": "GKP",
-    "DEF": "DEF", "D": "DEF", "DC": "DEF", "DL": "DEF", "DR": "DEF",
-    "MID": "MID", "M": "MID", "MC": "MID", "ML": "MID", "MR": "MID",
-    "DMC": "MID", "DML": "MID", "DMR": "MID",
-    "FWD": "FWD", "F": "FWD", "FW": "FWD",
-    "AMC": "FWD", "AML": "FWD", "AMR": "FWD",
+    "GKP": "GKP",
+    "GK": "GKP",
+    "GOALKEEPER": "GKP",
+    "G": "GKP",
+    "DEF": "DEF",
+    "D": "DEF",
+    "DC": "DEF",
+    "DL": "DEF",
+    "DR": "DEF",
+    "MID": "MID",
+    "M": "MID",
+    "MC": "MID",
+    "ML": "MID",
+    "MR": "MID",
+    "DMC": "MID",
+    "DML": "MID",
+    "DMR": "MID",
+    "FWD": "FWD",
+    "F": "FWD",
+    "FW": "FWD",
+    "AMC": "FWD",
+    "AML": "FWD",
+    "AMR": "FWD",
 }
 
 
@@ -688,9 +704,7 @@ def build_season_mappings(season: str) -> pl.DataFrame:
 
     result = result.with_columns(
         pl.col("confidence_score").fill_null(0.0).alias("confidence_score"),
-        (pl.col("confidence_score") < HIGH_CONFIDENCE).alias(
-            "requires_manual_review"
-        ),
+        (pl.col("confidence_score") < HIGH_CONFIDENCE).alias("requires_manual_review"),
         pl.when(pl.col("confidence_score") == EXACT_MATCH)
         .then(pl.lit("exact"))
         .when(pl.col("confidence_score") >= HIGH_CONFIDENCE)

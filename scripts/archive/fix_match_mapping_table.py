@@ -2,7 +2,7 @@
 """Directly fix the match_mapping table by dropping and recreating."""
 
 import os
-import psycopg2
+
 from dotenv import load_dotenv
 
 load_dotenv()

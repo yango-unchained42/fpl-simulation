@@ -16,7 +16,13 @@ from src.silver.player_mapping import (
 
 def test_threshold_ordering():
     """Test that thresholds are in correct order."""
-    assert EXACT_MATCH > HIGH_CONFIDENCE > MEDIUM_CONFIDENCE > LOW_CONFIDENCE > MIN_FUZZY_THRESHOLD
+    assert (
+        EXACT_MATCH
+        > HIGH_CONFIDENCE
+        > MEDIUM_CONFIDENCE
+        > LOW_CONFIDENCE
+        > MIN_FUZZY_THRESHOLD
+    )
     assert EXACT_MATCH == 1.0
     assert MIN_FUZZY_THRESHOLD >= 0.0
 
