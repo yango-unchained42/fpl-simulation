@@ -2,6 +2,21 @@
 
 Creates unified player identity mapping across FPL, Vaastav, and Understat
 per season. Uses fuzzy name matching with team-based disambiguation.
+
+Matching strategy (in priority order):
+1. Manual overrides (player_overrides.py) — known problem cases
+2. Exact name + team match — confidence 1.0
+3. Fuzzy name + same team — Levenshtein-based, boosted +0.2
+4. Last name + same team + position — for partial name matches
+5. Fuzzy name + cross-team + position — lower confidence (×0.7)
+6. Exact name cross-team — for mid-season transfers (confidence 0.9)
+
+Thresholds:
+- EXACT: 1.0 — character-perfect match
+- HIGH: 0.85 — strong fuzzy match, likely correct
+- MEDIUM: 0.65 — reasonable fuzzy match with team confirmation
+- LOW: 0.55 — weak match, only if position matches
+- FALLBACK: 0.40 — minimum threshold to consider any fuzzy match
 """
 
 from __future__ import annotations
@@ -11,7 +26,9 @@ import logging
 import polars as pl
 from dotenv import load_dotenv
 
+from src.config import ALL_SEASONS, CURRENT_SEASON
 from src.data.database import get_supabase_client, write_to_supabase
+from src.silver.player_overrides import get_override_lookup
 from src.utils.name_resolver import (
     build_name_mapping,
     standardize_name,
@@ -20,21 +37,33 @@ from src.utils.supabase_utils import fetch_all_paginated
 
 logger = logging.getLogger(__name__)
 
-# Load environment variables
 load_dotenv()
 
-# Confidence thresholds
-EXACT_MATCH_THRESHOLD = 1.0
-HIGH_CONFIDENCE_THRESHOLD = 0.85
-LOW_CONFIDENCE_THRESHOLD = 0.55  # Lower threshold to capture more fuzzy matches
+# ── Matching thresholds ─────────────────────────────────────────────────────
+EXACT_MATCH = 1.0       # Character-perfect name match
+HIGH_CONFIDENCE = 0.85  # Strong fuzzy match — very likely correct
+MEDIUM_CONFIDENCE = 0.65  # Reasonable match with team confirmation
+LOW_CONFIDENCE = 0.55   # Weak match — needs position verification
+MIN_FUZZY_THRESHOLD = 0.40  # Floor — below this, ignore fuzzy match
+LAST_NAME_BOOST = 0.2   # Added when fuzzy match found within same team
+TRANSFER_CONFIDENCE = 0.9  # Exact name match across teams (transfers)
 
-# Data availability by season:
-# - FPL: only 2025-26
-# - Vaastav: 2021-22 to 2024-25
-# - Understat: all seasons
+# Position normalization
+POS_MAP = {
+    "GKP": "GKP", "GK": "GKP", "GOALKEEPER": "GKP", "G": "GKP",
+    "DEF": "DEF", "D": "DEF", "DC": "DEF", "DL": "DEF", "DR": "DEF",
+    "MID": "MID", "M": "MID", "MC": "MID", "ML": "MID", "MR": "MID",
+    "DMC": "MID", "DML": "MID", "DMR": "MID",
+    "FWD": "FWD", "F": "FWD", "FW": "FWD",
+    "AMC": "FWD", "AML": "FWD", "AMR": "FWD",
+}
 
-# We'll process each season and use available sources
-SEASONS = ["2021-22", "2022-23", "2023-24", "2024-25", "2025-26"]
+
+def _normalize_position(pos: str | None) -> str:
+    """Normalize position to GKP/DEF/MID/FWD."""
+    if not pos:
+        return ""
+    return POS_MAP.get(str(pos).upper(), str(pos).upper()[0] if str(pos) else "")
 
 
 def get_season_sources(season: str) -> dict:
@@ -363,7 +392,7 @@ def match_players_with_team(
             for tgt_id, tgt_name, tgt_pos in team_targets[src_team]:
                 if tgt_name == src_name:
                     matched_target_id = tgt_id
-                    confidence = EXACT_MATCH_THRESHOLD
+                    confidence = EXACT_MATCH
                     match_type = "exact"
                     break
 
@@ -659,12 +688,12 @@ def build_season_mappings(season: str) -> pl.DataFrame:
 
     result = result.with_columns(
         pl.col("confidence_score").fill_null(0.0).alias("confidence_score"),
-        (pl.col("confidence_score") < HIGH_CONFIDENCE_THRESHOLD).alias(
+        (pl.col("confidence_score") < HIGH_CONFIDENCE).alias(
             "requires_manual_review"
         ),
-        pl.when(pl.col("confidence_score") == EXACT_MATCH_THRESHOLD)
+        pl.when(pl.col("confidence_score") == EXACT_MATCH)
         .then(pl.lit("exact"))
-        .when(pl.col("confidence_score") >= HIGH_CONFIDENCE_THRESHOLD)
+        .when(pl.col("confidence_score") >= HIGH_CONFIDENCE)
         .then(pl.lit("fuzzy"))
         .otherwise(pl.lit("manual"))
         .alias("source"),
