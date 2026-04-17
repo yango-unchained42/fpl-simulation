@@ -1,0 +1,40 @@
+digraph StreamlitFlow {
+    rankdir=TB;
+    node [shape=box, style="rounded,filled", fontname="Helvetica"];
+    
+    // Streamlit core
+    app [label="app.py", fillcolor="#d1ecf1"];
+    loaders [label="loaders.py", fillcolor="#d1ecf1"];
+    supabase [label="Supabase Client", shape=ellipse, fillcolor="#e8f4f8"];
+    
+    // Cached functions
+    D [label="load_players()", fillcolor="#fff3cd"];
+    E [label="load_predictions()", fillcolor="#fff3cd"];
+    F [label="load_fixtures()", fillcolor="#fff3cd"];
+    G [label="load_teams()", fillcolor="#fff3cd"];
+    
+    // Pages
+    H [label="1_Predictions.py", fillcolor="#d4edda"];
+    I [label="AgGrid Display", shape=box3d, fillcolor="#d4edda"];
+    J [label="2_Team_Selector.py", fillcolor="#d4edda"];
+    K [label="ILP Optimizer", shape=diamond, fillcolor="#f8d7da"];
+    L [label="Optimal Squad", shape=box3d, fillcolor="#d4edda"];
+    
+    // Edges
+    app -> loaders;
+    loaders -> supabase;
+    
+    supabase -> D;
+    supabase -> E;
+    supabase -> F;
+    supabase -> G;
+    
+    D -> H;
+    E -> H;
+    H -> I;
+    
+    D -> J;
+    E -> J;
+    J -> K;
+    K -> L;
+}

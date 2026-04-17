@@ -1,0 +1,71 @@
+{
+  "player_predictor": [
+    {
+      "version": "v1",
+      "model_path": "/path/to/model.joblib",
+      "metrics": {},
+      "params": {},
+      "registered_at": "2026-04-01T18:23:57.452338+00:00"
+    },
+    {
+      "version": "v2",
+      "model_path": "/path/to/v1.joblib",
+      "metrics": {},
+      "params": {},
+      "registered_at": "2026-04-01T18:23:57.453375+00:00"
+    },
+    {
+      "version": "v3",
+      "model_path": "/path/to/v2.joblib",
+      "metrics": {},
+      "params": {},
+      "registered_at": "2026-04-01T18:23:57.453524+00:00"
+    },
+    {
+      "version": "custom_v1",
+      "model_path": "/path/to/model.joblib",
+      "metrics": {},
+      "params": {},
+      "registered_at": "2026-04-01T18:23:57.456085+00:00"
+    },
+    {
+      "version": "v4",
+      "model_path": "/path/to/model.joblib",
+      "metrics": {
+        "accuracy": 0.95
+      },
+      "params": {
+        "learning_rate": 0.01
+      },
+      "registered_at": "2026-04-01T18:23:57.456627+00:00"
+    },
+    {
+      "version": "v5",
+      "model_path": "/path/to/v1.joblib",
+      "metrics": {},
+      "params": {},
+      "registered_at": "2026-04-01T18:23:57.459579+00:00"
+    },
+    {
+      "version": "v6",
+      "model_path": "/path/to/v2.joblib",
+      "metrics": {},
+      "params": {},
+      "registered_at": "2026-04-01T18:23:57.459730+00:00"
+    },
+    {
+      "version": "v7",
+      "model_path": "/path/to/v1.joblib",
+      "metrics": {},
+      "params": {},
+      "registered_at": "2026-04-01T18:23:57.462633+00:00"
+    },
+    {
+      "version": "v8",
+      "model_path": "/path/to/v2.joblib",
+      "metrics": {},
+      "params": {},
+      "registered_at": "2026-04-01T18:23:57.462787+00:00"
+    }
+  ]
+}

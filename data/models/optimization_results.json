@@ -1,0 +1,10 @@
+{
+  "best_params": {
+    "n_estimators": 100,
+    "learning_rate": 0.05
+  },
+  "info": {
+    "best_score": -1.5,
+    "optimization_time_seconds": 10.0
+  }
+}

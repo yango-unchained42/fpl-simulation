@@ -1,0 +1,3 @@
+# Model artefacts directory
+# .joblib files in this directory are committed to the repo
+# (required for Streamlit Cloud runtime)

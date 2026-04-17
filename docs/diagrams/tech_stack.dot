@@ -1,0 +1,39 @@
+digraph TechStack {
+    rankdir=LR;
+    node [shape=box, style="rounded,filled", fontname="Helvetica"];
+    
+    // Data Processing
+    DP [label="Data Processing\nPolars, Pandas, NumPy", fillcolor="#e8f4f8"];
+    
+    // ML
+    ML [label="Machine Learning\nLightGBM, Scikit-learn", fillcolor="#f8d7da"];
+    
+    // Optimization
+    Opt [label="Optimization\nPuLP (ILP Solver)", fillcolor="#fcefd4"];
+    
+    // Simulation
+    Sim [label="Simulation\nMonte Carlo", fillcolor="#e2e3e5"];
+    
+    // Database
+    DB [label="Database\nSupabase, DuckDB", fillcolor="#d4edda"];
+    
+    // UI
+    UI [label="UI/Dashboard\nStreamlit", fillcolor="#d1ecf1"];
+    
+    // DevOps
+    DevOps [label="DevOps/Quality\nRuff, Black, MyPy\nPytest, Pre-commit", fillcolor="#cce5ff"];
+    
+    // MLOps
+    MLOps [label="MLOps\nMLflow", fillcolor="#fff3cd"];
+    
+    // Connections
+    DP -> ML;
+    DP -> DB;
+    ML -> Opt;
+    ML -> Sim;
+    Opt -> UI;
+    Sim -> UI;
+    DB -> UI;
+    DP -> DevOps;
+    ML -> MLOps;
+}

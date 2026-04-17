@@ -1,0 +1,81 @@
+digraph DataSources {
+    rankdir=TB;
+    node [shape=box, style="rounded,filled", fontname="Helvetica"];
+    
+    // External sources
+    subgraph cluster_external {
+        label="External APIs";
+        style=filled;
+        color=lightgrey;
+        
+        FPL [label="FPL API\n(Player prices, fixtures,\nteam strength)", shape=ellipse, fillcolor="#e8f4f8"];
+        Vaastav [label="Vaastav\n(Historical GW data)", shape=ellipse, fillcolor="#e8f4f8"];
+        Understat [label="Understat\n(xG, xA, shots)", shape=ellipse, fillcolor="#e8f4f8"];
+    }
+    
+    // Data ingestion
+    Ingestion [label="Data Ingestion\n(ingest_*.py)", shape=box3d, fillcolor="#fff3cd"];
+    
+    // Raw storage
+    Raw [label="data/raw/\n(Bronze Layer)", shape=folder, fillcolor="#f8f9fa"];
+    
+    // Bronze layer tables
+    subgraph cluster_bronze {
+        label="Bronze Layer (Supabase)";
+        style=filled;
+        color="#ffe5cc";
+        
+        B1 [label="bronze_fpl_players"];
+        B2 [label="bronze_fpl_teams"];
+        B3 [label="bronze_fpl_fixtures"];
+        B4 [label="bronze_player_history"];
+        B5 [label="bronze_understat_*"];
+        B6 [label="bronze_team_mappings"];
+    }
+    
+    // Silver layer
+    subgraph cluster_silver {
+        label="Silver Layer";
+        style=filled;
+        color="#d4edda";
+        
+        S1 [label="silver_players"];
+        S2 [label="silver_teams"];
+        S3 [label="silver_player_history"];
+        S4 [label="silver_player_crosswalk"];
+    }
+    
+    // Gold layer
+    subgraph cluster_gold {
+        label="Gold Layer";
+        style=filled;
+        color="#cce5ff";
+        
+        G1 [label="gold_player_features"];
+        G2 [label="gold_predictions"];
+        G3 [label="gold_user_teams"];
+    }
+    
+    // Edges
+    FPL -> Ingestion;
+    Vaastav -> Ingestion;
+    Understat -> Ingestion;
+    
+    Ingestion -> Raw;
+    Raw -> B1;
+    Raw -> B2;
+    Raw -> B3;
+    Raw -> B4;
+    Raw -> B5;
+    Raw -> B6;
+    
+    B1 -> S1;
+    B2 -> S2;
+    B4 -> S3;
+    B6 -> S4;
+    
+    S1 -> G1;
+    S3 -> G1;
+    G1 -> G2;
+    G2 -> G3;
+}

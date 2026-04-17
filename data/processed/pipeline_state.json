@@ -1,0 +1,50 @@
+{
+  "fpl": {
+    "source": "fpl",
+    "success": false,
+    "row_count": 0,
+    "duration_seconds": 1.0251998901367188e-05,
+    "retries": 0,
+    "error_message": "FPL API down"
+  },
+  "vaastav": {
+    "source": "vaastav",
+    "success": true,
+    "row_count": 1,
+    "duration_seconds": 7.152557373046875e-06,
+    "retries": 0,
+    "error_message": null
+  },
+  "understat_shots": {
+    "source": "understat_shots",
+    "success": false,
+    "row_count": 0,
+    "duration_seconds": 3.814697265625e-06,
+    "retries": 2,
+    "error_message": "Freshness check: DataFrame is empty"
+  },
+  "understat_player_match": {
+    "source": "understat_player_match",
+    "success": false,
+    "row_count": 0,
+    "duration_seconds": 2.6226043701171875e-06,
+    "retries": 2,
+    "error_message": "Freshness check: DataFrame is empty"
+  },
+  "understat_player_season": {
+    "source": "understat_player_season",
+    "success": false,
+    "row_count": 0,
+    "duration_seconds": 3.0994415283203125e-06,
+    "retries": 2,
+    "error_message": "Freshness check: DataFrame is empty"
+  },
+  "understat_match_stats": {
+    "source": "understat_match_stats",
+    "success": false,
+    "row_count": 0,
+    "duration_seconds": 2.86102294921875e-06,
+    "retries": 2,
+    "error_message": "Freshness check: DataFrame is empty"
+  }
+}

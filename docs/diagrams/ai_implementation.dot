@@ -1,0 +1,33 @@
+digraph AIImplementation {
+    rankdir=TB;
+    node [shape=box, style="rounded,filled", fontname="Helvetica"];
+    
+    // Current AI/ML
+    subgraph cluster_current {
+        label="Current Implementation";
+        style=filled;
+        color="#d4edda";
+        
+        ML1 [label="LightGBM\nPoints Predictor", fillcolor="#f8d7da"];
+        ML2 [label="LightGBM\nXI Classifier", fillcolor="#f8d7da"];
+        MC [label="Monte Carlo\nSimulation", fillcolor="#e2e3e5"];
+    }
+    
+    // Future AI
+    subgraph cluster_future {
+        label="Future AI Enhancements";
+        style=filled;
+        color="#fff3cd";
+        
+        Sent [label="Sentiment Analysis\n(NLP/BERT)", fillcolor="#cce5ff"];
+        GenAI [label="Generative AI\n(LLM Insights)", fillcolor="#cce5ff"];
+        News [label="News API", shape=ellipse, fillcolor="#e8f4f8"];
+    }
+    
+    // Connections
+    News -> Sent;
+    Sent -> GenAI;
+    ML1 -> GenAI;
+    ML2 -> GenAI;
+    MC -> GenAI;
+}

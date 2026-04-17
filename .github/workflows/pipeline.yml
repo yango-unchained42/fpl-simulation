@@ -1,0 +1,59 @@
+name: Pipeline
+
+on:
+  schedule:
+    # Run daily at 06:00 UTC
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Check if next GW is within 24 hours
+        run: |
+          python -c "
+          import datetime
+          import requests
+
+          # Get current gameweek info from FPL API
+          resp = requests.get('https://fantasy.premierleague.com/api/bootstrap-static/')
+          data = resp.json()
+          current_gw = next(e for e in data['events'] if e['is_current'])
+          next_gw = next((e for e in data['events'] if e['is_next']), None)
+
+          if next_gw is None:
+              print('No upcoming gameweek. Exiting gracefully.')
+              exit(0)
+
+          deadline = datetime.datetime.fromisoformat(next_gw['deadline_time'].replace('Z', '+00:00'))
+          now = datetime.datetime.now(datetime.timezone.utc)
+          delta = deadline - now
+
+          if delta.total_seconds() < 86400:
+              print(f'Next GW ({next_gw[\"id\"]}) deadline is within 24h. Running pipeline.')
+              exit(0)
+          else:
+              print(f'Next GW deadline is {delta.total_seconds()/3600:.1f}h away. Skipping.')
+              exit(78)  # GitHub Actions neutral exit
+          "
+
+      - name: Run full pipeline
+        run: python main.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
