@@ -5,15 +5,12 @@ from __future__ import annotations
 import logging
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from src.utils.safe_upsert import (
     clean_records_for_upload,
     deduplicate_by_key,
     safe_upsert,
     truncate_table,
 )
-
 
 # ── deduplicate_by_key ──────────────────────────────────────────────────────
 

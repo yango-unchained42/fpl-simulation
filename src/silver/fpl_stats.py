@@ -8,7 +8,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from src.config import BATCH_SIZE, CURRENT_SEASON
+from src.config import CURRENT_SEASON
 from src.utils.data_cleaning import clean_and_flag_record
 from src.utils.safe_upsert import safe_upsert, truncate_table
 from src.utils.supabase_utils import fetch_all_paginated
