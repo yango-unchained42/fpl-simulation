@@ -110,7 +110,7 @@ Historical seasons (2021-25) have NO defensive contribution points. But Understa
 - Train the full model on augmented historical data
 
 ```python
-def backfill_defensive_points(player_stats: pd.DataFrame) -> pd.DataFrame:
+def backfill_defensive_points(player_stats: pl.DataFrame) -> pl.DataFrame:
     """Apply 2025/26 defensive scoring to historical data."""
     # Understat has tackles + interceptions + blocks as separate columns
     # FPL defensive_contribution = tackles + interceptions + blocks + clearances
@@ -600,7 +600,7 @@ Step 8 is always-on.
 → GitHub (`docs/ML_SIMULATION_SPEC.md`) — versioned with code
 
 ### Model artifacts
-→ `data/models/` (gitignored but committed for Streamlit Cloud deployment)
+→ `data/models/` (committed — NOT gitignored; required for Streamlit Cloud deployment)
 
 ### Experiment tracking
 → MLflow local (`mlruns/`) — logs params, metrics, artifacts per training run
