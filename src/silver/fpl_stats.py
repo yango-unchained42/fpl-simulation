@@ -12,7 +12,6 @@ import polars as pl
 
 from src.config import BATCH_SIZE, CURRENT_SEASON
 from src.utils.data_cleaning import clean_and_flag_record
-from src.utils.safe_upsert import safe_upsert
 from src.utils.supabase_utils import fetch_all_paginated
 
 logger = logging.getLogger(__name__)

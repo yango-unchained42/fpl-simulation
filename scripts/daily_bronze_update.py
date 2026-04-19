@@ -243,15 +243,20 @@ def upload_table(supabase, table_name: str, df: pl.DataFrame) -> int:
         # Fallback: try supabase CLI
         token = os.getenv("SUPABASE_ACCESS_TOKEN")
         if token:
-            try:
-                subprocess.run(
-                    ["supabase", "db", "query", "--linked",
-                     f"DELETE FROM {table_name} WHERE season = '{season}';"],
-                    capture_output=True, text=True,
-                    env={**os.environ, "SUPABASE_ACCESS_TOKEN": token},
-                )
-            except FileNotFoundError:
-                pass  # CLI not available — upsert will overwrite existing rows
+            # Validate season format to prevent SQL injection (must be YYYY-DD)
+            import re
+            if not re.match(r"^\d{4}-\d{2}$", str(season)):
+                logger.error(f"  Invalid season format '{season}' — skipping SQL delete")
+            else:
+                try:
+                    subprocess.run(
+                        ["supabase", "db", "query", "--linked",
+                         f"DELETE FROM {table_name} WHERE season = '{season}';"],
+                        capture_output=True, text=True,
+                        env={**os.environ, "SUPABASE_ACCESS_TOKEN": token},
+                    )
+                except FileNotFoundError:
+                    pass  # CLI not available — upsert will overwrite existing rows
 
     # Filter to only columns that exist in Supabase schema
     valid_cols = get_table_columns(supabase, table_name)
