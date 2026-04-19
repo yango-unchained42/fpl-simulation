@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS metadata (
     source_hash TEXT,
     row_count INTEGER,
     last_updated TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     PRIMARY KEY (table_name, season)
 );
 

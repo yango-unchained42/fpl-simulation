@@ -6,7 +6,7 @@ Before working on Silver layer tasks, always review: `docs/SILVER_LAYER_PIPELINE
 
 This document defines the 3-step pipeline:
 1. **Team Mapping** → `silver_team_mapping` (unified_team_id)
-2. **Player Mapping** → `silver_player_mapping` (unified_player_id)  
+2. **Player Mapping** → `silver_player_mapping` (unified_player_id)
 3. **Match Mapping** → `silver_match_mapping` (match_id with team UUIDs)
 
 ## Agent Roles and Permissions
@@ -288,16 +288,16 @@ import polars as pl
 def load_player_data(season: str) -> pl.DataFrame:
     """Load player data for a season with schema validation."""
     df = pl.read_csv(f"data/raw/{season}/players.csv")
-    
+
     expected_schema = {
         "element": pl.Int64,
         "web_name": pl.Utf8,
         "total_points": pl.Int64,
     }
-    
+
     if df.schema != expected_schema:
         raise DataValidationError(f"Schema mismatch: {df.schema}")
-    
+
     return df
 ```
 

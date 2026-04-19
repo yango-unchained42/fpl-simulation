@@ -8,8 +8,6 @@ from __future__ import annotations
 
 import argparse
 import logging
-import sys
-from pathlib import Path
 
 logging.basicConfig(
     level=logging.INFO,
@@ -38,13 +36,13 @@ def run_pipeline(gameweek: int | None = None) -> None:
     logger.info("Step 2: Data Cleaning")
     from src.data.clean import clean_data
 
-    players_clean = clean_data(fpl_data["players"])
+    _players_clean = clean_data(fpl_data["players"])
 
     # Step 3: Feature Engineering
     logger.info("Step 3: Feature Engineering")
     from src.features.engineer import engineer_features
 
-    features = engineer_features(
+    _features = engineer_features(
         player_stats=historical,
         matches=historical,  # placeholder
         fixtures=fpl_data["fixtures"],

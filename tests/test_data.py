@@ -165,7 +165,7 @@ class TestParseFunctions:
         assert result.shape[0] == 1
 
     def test_parse_players_empty(self) -> None:
-        data = {"elements": []}
+        data: dict = {"elements": []}
         result = parse_players(data)
         assert result.shape[0] == 0
 
@@ -175,7 +175,7 @@ class TestParseFunctions:
         assert result.shape[0] == 1
 
     def test_parse_teams_empty(self) -> None:
-        data = {"teams": []}
+        data: dict = {"teams": []}
         result = parse_teams(data)
         assert result.shape[0] == 0
 
