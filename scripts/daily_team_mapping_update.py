@@ -20,7 +20,6 @@ from typing import Any
 from dotenv import load_dotenv
 
 from src.data.database import get_supabase_client
-from src.silver.player_mapping import build_all_season_mappings, upload_to_supabase
 from src.utils.supabase_utils import fetch_all_by_filter, fetch_seasonal_records
 
 load_dotenv()

@@ -12,24 +12,18 @@ def test_config_imports():
         ALL_SEASONS,
         BATCH_SIZE,
         BUDGET,
-        CACHE_TTL_SECONDS,
         CURRENT_SEASON,
         CURRENT_SEASON_UNDERSTAT,
         DATA_DIR,
         FPL_API_BASE,
         MAX_PER_CLUB,
-        MAX_RETRIES,
         MODEL_DIR,
         N_SIMULATIONS,
         POSITION_COUNTS,
-        PROJECT_ROOT,
         PROCESSED_DATA_DIR,
+        PROJECT_ROOT,
         RAW_DATA_DIR,
-        RETRY_DELAY_SECONDS,
         SQUAD_SIZE,
-        SUPABASE_ACCESS_TOKEN,
-        SUPABASE_KEY,
-        SUPABASE_URL,
     )
 
     # Verify types
@@ -85,7 +79,6 @@ def test_season_format():
 
 def test_get_supabase_missing_env():
     """Test that get_supabase raises ValueError when env vars are missing."""
-    from src.config import get_supabase
 
     # Save and clear env
     saved_url = os.environ.get("SUPABASE_URL", "")

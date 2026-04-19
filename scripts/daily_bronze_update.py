@@ -19,13 +19,13 @@ import os
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 
 import polars as pl
 import requests
 from dotenv import load_dotenv
 
-from src.config import BATCH_SIZE, CURRENT_SEASON, FPL_API_BASE, get_supabase as _get_supabase
+from src.config import BATCH_SIZE, CURRENT_SEASON, FPL_API_BASE
+from src.config import get_supabase as _get_supabase
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -114,9 +114,9 @@ def fetch_fpl_players() -> pl.DataFrame:
     # Try API first
     try:
         logger.info("  Fetching FPL players from API...")
-        response = requests.get(f"{FPL_API_BASE}bootstrap-static/", timeout=30)
-        response.raise_for_status()
-        data = response.json()
+        _response = requests.get(f"{FPL_API_BASE}bootstrap-static/", timeout=30)
+        _response.raise_for_status()
+        data = _response.json()
 
         # Cache locally
         cache_file.parent.mkdir(parents=True, exist_ok=True)
@@ -144,9 +144,9 @@ def fetch_fpl_fixtures() -> pl.DataFrame:
     # Try API first
     try:
         logger.info("  Fetching FPL fixtures from API...")
-        response = requests.get(f"{FPL_API_BASE}fixtures/", timeout=30)
-        response.raise_for_status()
-        data = response.json()
+        _response = requests.get(f"{FPL_API_BASE}fixtures/", timeout=30)
+        _response.raise_for_status()
+        data = _response.json()
 
         # Cache locally
         with open(cache_file, "w") as f:
@@ -173,7 +173,7 @@ def fetch_fpl_gw() -> pl.DataFrame:
     # Try API first
     try:
         logger.info("  Fetching FPL GW data from API...")
-        response = requests.get(f"{FPL_API_BASE}element-summary/{1}/", timeout=30)
+        _response = requests.get(f"{FPL_API_BASE}element-summary/{1}/", timeout=30)
         # This would need to iterate all players - for now use cache approach
         # Actually FPL doesn't have a bulk GW endpoint, we use the cached approach
     except Exception:
@@ -225,7 +225,6 @@ def upload_table(supabase, table_name: str, df: pl.DataFrame) -> int:
 
     Truncates table before upload to avoid duplicates from multiple runs.
     """
-    import os
     import subprocess
 
     if df.is_empty():
@@ -354,9 +353,9 @@ def update_understat_bronze() -> bool:
 
     try:
         from src.data.ingest_understat import (
+            ingest_understat_match_stats,
             ingest_understat_player_match_stats,
             ingest_understat_shots,
-            ingest_understat_match_stats,
         )
 
         # Only fetch current season

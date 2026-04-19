@@ -27,8 +27,8 @@ from typing import Any
 import polars as pl
 from dotenv import load_dotenv
 
-from src.config import ALL_SEASONS, BATCH_SIZE
-from src.data.database import get_supabase_client
+from src.config import ALL_SEASONS
+from src.data.database import get_supabase_client, write_to_supabase
 from src.utils.name_resolver import (
     build_name_mapping,
     standardize_name,
@@ -40,22 +40,39 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 # ── Matching thresholds ─────────────────────────────────────────────────────
-EXACT_MATCH = 1.0       # Character-perfect name match
+EXACT_MATCH = 1.0  # Character-perfect name match
 HIGH_CONFIDENCE = 0.85  # Strong fuzzy match — very likely correct
 MEDIUM_CONFIDENCE = 0.65  # Reasonable match with team confirmation
-LOW_CONFIDENCE = 0.55   # Weak match — needs position verification
+LOW_CONFIDENCE = 0.55  # Weak match — needs position verification
 MIN_FUZZY_THRESHOLD = 0.40  # Floor — below this, ignore fuzzy match
-LAST_NAME_BOOST = 0.2   # Added when fuzzy match found within same team
+LAST_NAME_BOOST = 0.2  # Added when fuzzy match found within same team
 TRANSFER_CONFIDENCE = 0.9  # Exact name match across teams (transfers)
 
 # Position normalization
 POS_MAP = {
-    "GKP": "GKP", "GK": "GKP", "GOALKEEPER": "GKP", "G": "GKP",
-    "DEF": "DEF", "D": "DEF", "DC": "DEF", "DL": "DEF", "DR": "DEF",
-    "MID": "MID", "M": "MID", "MC": "MID", "ML": "MID", "MR": "MID",
-    "DMC": "MID", "DML": "MID", "DMR": "MID",
-    "FWD": "FWD", "F": "FWD", "FW": "FWD",
-    "AMC": "FWD", "AML": "FWD", "AMR": "FWD",
+    "GKP": "GKP",
+    "GK": "GKP",
+    "GOALKEEPER": "GKP",
+    "G": "GKP",
+    "DEF": "DEF",
+    "D": "DEF",
+    "DC": "DEF",
+    "DL": "DEF",
+    "DR": "DEF",
+    "MID": "MID",
+    "M": "MID",
+    "MC": "MID",
+    "ML": "MID",
+    "MR": "MID",
+    "DMC": "MID",
+    "DML": "MID",
+    "DMR": "MID",
+    "FWD": "FWD",
+    "F": "FWD",
+    "FW": "FWD",
+    "AMC": "FWD",
+    "AML": "FWD",
+    "AMR": "FWD",
 }
 
 
@@ -688,9 +705,7 @@ def build_season_mappings(season: str) -> pl.DataFrame:
 
     result = result.with_columns(
         pl.col("confidence_score").fill_null(0.0).alias("confidence_score"),
-        (pl.col("confidence_score") < HIGH_CONFIDENCE).alias(
-            "requires_manual_review"
-        ),
+        (pl.col("confidence_score") < HIGH_CONFIDENCE).alias("requires_manual_review"),
         pl.when(pl.col("confidence_score") == EXACT_MATCH)
         .then(pl.lit("exact"))
         .when(pl.col("confidence_score") >= HIGH_CONFIDENCE)
@@ -843,43 +858,37 @@ def build_all_season_mappings() -> pl.DataFrame:
 
 
 def upload_to_supabase(mappings: pl.DataFrame) -> int:
-    """Upload mappings to Supabase silver_player_mapping table.
-
-    Uses safe deduplication to prevent duplicate (season, fpl_id) entries.
-    """
-    from src.utils.safe_upsert import clean_records_for_upload, deduplicate_by_key
-
+    """Upload mappings to Supabase silver_player_mapping table."""
     client = get_supabase()
+
+    # Prepare records - handle UUID for unified_player_id
     records = mappings.to_dicts()
+    total = len(records)
 
-    if not records:
-        return 0
+    logger.info(f"Uploading {total} player mappings to Supabase...")
 
-    # Deduplicate by (season, fpl_id) — keep highest confidence match
-    records = deduplicate_by_key(
-        records,
-        key_columns=["season", "fpl_id"],
-        score_column="confidence_score",
+    # Clear the table first to avoid duplicates from new UUIDs being generated
+    # This is safe because we're regenerating all mappings from scratch
+    logger.info("Clearing existing mappings...")
+    client.table("silver_player_mapping").delete().neq(
+        "unified_player_id", "00000000-0000-0000-0000-000000000000"
+    ).execute()
+
+    # Use the existing write_to_supabase function with insert (not upsert since we cleared)
+    success = write_to_supabase(
+        "silver_player_mapping",
+        mappings,
+        client=client,
+        upsert=False,
     )
 
-    # Clean server-managed columns
-    records = clean_records_for_upload(records)
+    if success:
+        logger.info(f"Successfully uploaded {total} player mappings")
+    else:
+        logger.error("Failed to upload player mappings")
+        total = 0
 
-    total = len(records)
-    logger.info(f"Uploading {total} deduplicated player mappings...")
-
-    # Upsert in batches — track failures
-    written = 0
-    for i in range(0, total, BATCH_SIZE):
-        batch = records[i : i + BATCH_SIZE]
-        try:
-            client.table("silver_player_mapping").upsert(batch).execute()
-            written += len(batch)
-        except Exception as e:
-            logger.error(f"  Batch {i // BATCH_SIZE} failed: {e}")
-
-    logger.info(f"  Uploaded {written}/{total} player mappings")
-    return written
+    return total
 
 
 def run() -> None:

@@ -49,7 +49,7 @@ def run_script(script_path: str, args: list[str] | None = None) -> bool:
             logger.error(f"  ✗ failed:\n{result.stderr[-500:]}")
             return False
     except subprocess.TimeoutExpired:
-        logger.error(f"  ✗ timed out")
+        logger.error("  ✗ timed out")
         return False
     except Exception as e:
         logger.error(f"  ✗ error: {e}")
