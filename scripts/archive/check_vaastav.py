@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Check bronze_vaastav_fixtures structure."""
 
-from dotenv import load_dotenv
 import os
+
+from dotenv import load_dotenv
 from supabase import create_client
 
 load_dotenv()

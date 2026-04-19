@@ -17,7 +17,6 @@ import polars as pl
 from src.config import (
     ALL_SEASONS,
     CACHE_TTL_SECONDS,
-    CURRENT_SEASON_UNDERSTAT,
     RAW_DATA_DIR,
 )
 
