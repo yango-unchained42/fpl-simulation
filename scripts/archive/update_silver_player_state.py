@@ -10,7 +10,6 @@ import argparse
 import logging
 from typing import Any
 
-import polars as pl
 import requests
 
 logging.basicConfig(level=logging.INFO)
@@ -74,6 +73,7 @@ def main() -> None:
     load_dotenv()
 
     import os
+
     from supabase import create_client
 
     url = os.getenv("SUPABASE_URL", "")

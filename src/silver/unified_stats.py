@@ -10,7 +10,6 @@ import logging
 from typing import Any
 
 from src.config import BATCH_SIZE, CURRENT_SEASON
-from src.utils.supabase_utils import fetch_all_paginated
 
 logger = logging.getLogger(__name__)
 
@@ -34,18 +33,24 @@ def _truncate_table(client: Any, table_name: str) -> None:
         if result.returncode != 0:
             logger.warning(f"  Truncate failed for {table_name}: {result.stderr}")
     except FileNotFoundError:
-        logger.debug(f"  supabase CLI not available — skipping truncate for {table_name}")
+        logger.debug(
+            f"  supabase CLI not available — skipping truncate for {table_name}"
+        )
 
 
 # Understat columns to pull into unified stats
 UNDERSTAT_COLS = [
-    "xg", "xa", "xg_chain", "xg_buildup", "shots", "key_passes", "minutes",
+    "xg",
+    "xa",
+    "xg_chain",
+    "xg_buildup",
+    "shots",
+    "key_passes",
+    "minutes",
 ]
 
 
-def update_unified_player_stats(
-    client: Any, season: str = CURRENT_SEASON
-) -> bool:
+def update_unified_player_stats(client: Any, season: str = CURRENT_SEASON) -> bool:
     """Update silver_unified_player_stats by merging FPL + Understat.
 
     Join key: (unified_player_id, match_id)
@@ -149,7 +154,9 @@ def update_unified_player_stats(
             "ict_index": fpl_rec.get("ict_index"),
             # Defensive
             "tackles": fpl_rec.get("tackles"),
-            "clearances_blocks_interceptions": fpl_rec.get("clearances_blocks_interceptions"),
+            "clearances_blocks_interceptions": fpl_rec.get(
+                "clearances_blocks_interceptions"
+            ),
             "recoveries": fpl_rec.get("recoveries"),
             "defensive_contribution": fpl_rec.get("defensive_contribution"),
             "saves": fpl_rec.get("saves"),
@@ -184,22 +191,24 @@ def update_unified_player_stats(
     for key, us_rec in understat_data.items():
         if key not in fpl_data:
             understat_only += 1
-            unified_records.append({
-                "unified_player_id": key[0],
-                "match_id": key[1],
-                "season": season,
-                "gameweek": us_rec.get("gameweek"),
-                "minutes": us_rec.get("minutes"),
-                "goals_scored": us_rec.get("goals"),
-                "assists": us_rec.get("assists"),
-                "xg": us_rec.get("xg"),
-                "xa": us_rec.get("xa"),
-                "xg_chain": us_rec.get("xg_chain"),
-                "xg_buildup": us_rec.get("xg_buildup"),
-                "shots": us_rec.get("shots"),
-                "key_passes": us_rec.get("key_passes"),
-                "position": us_rec.get("position"),
-            })
+            unified_records.append(
+                {
+                    "unified_player_id": key[0],
+                    "match_id": key[1],
+                    "season": season,
+                    "gameweek": us_rec.get("gameweek"),
+                    "minutes": us_rec.get("minutes"),
+                    "goals_scored": us_rec.get("goals"),
+                    "assists": us_rec.get("assists"),
+                    "xg": us_rec.get("xg"),
+                    "xa": us_rec.get("xa"),
+                    "xg_chain": us_rec.get("xg_chain"),
+                    "xg_buildup": us_rec.get("xg_buildup"),
+                    "shots": us_rec.get("shots"),
+                    "key_passes": us_rec.get("key_passes"),
+                    "position": us_rec.get("position"),
+                }
+            )
 
     logger.info(
         f"    Merged: {merged_count} FPL+Understat, {understat_only} Understat-only, "

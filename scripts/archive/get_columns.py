@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Get existing columns from DB."""
 
-from dotenv import load_dotenv
 import os
+
+from dotenv import load_dotenv
 from supabase import create_client
 
 load_dotenv()

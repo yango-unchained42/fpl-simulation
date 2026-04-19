@@ -49,9 +49,7 @@ def impute_missing_minutes(df: pl.DataFrame) -> pl.DataFrame:
     Returns:
         DataFrame with imputed minutes values.
     """
-    return df.with_columns(
-        pl.col("minutes").fill_null(0)
-    )
+    return df.with_columns(pl.col("minutes").fill_null(0))
 
 
 def winsorize_outliers(
@@ -76,9 +74,7 @@ def winsorize_outliers(
             continue
         lower_val = df[col].quantile(lower)
         upper_val = df[col].quantile(upper)
-        df = df.with_columns(
-            pl.col(col).clip(lower_val, upper_val)
-        )
+        df = df.with_columns(pl.col(col).clip(lower_val, upper_val))
     return df
 
 
@@ -94,7 +90,8 @@ def clean_data(df: pl.DataFrame) -> pl.DataFrame:
     df = standardize_names(df)
     df = impute_missing_minutes(df)
     numeric_cols = [
-        c for c in df.columns
+        c
+        for c in df.columns
         if df.schema[c] in (pl.Int64, pl.Float64, pl.Int32, pl.Float32)
     ]
     df = winsorize_outliers(df, numeric_cols)
