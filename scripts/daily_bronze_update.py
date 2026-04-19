@@ -244,14 +244,23 @@ def upload_table(supabase, table_name: str, df: pl.DataFrame) -> int:
         if token:
             # Validate season format to prevent SQL injection (must be YYYY-DD)
             import re
+
             if not re.match(r"^\d{4}-\d{2}$", str(season)):
-                logger.error(f"  Invalid season format '{season}' — skipping SQL delete")
+                logger.error(
+                    f"  Invalid season format '{season}' — skipping SQL delete"
+                )
             else:
                 try:
                     subprocess.run(
-                        ["supabase", "db", "query", "--linked",
-                         f"DELETE FROM {table_name} WHERE season = '{season}';"],
-                        capture_output=True, text=True,
+                        [
+                            "supabase",
+                            "db",
+                            "query",
+                            "--linked",
+                            f"DELETE FROM {table_name} WHERE season = '{season}';",
+                        ],
+                        capture_output=True,
+                        text=True,
                         env={**os.environ, "SUPABASE_ACCESS_TOKEN": token},
                     )
                 except FileNotFoundError:

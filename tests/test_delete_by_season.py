@@ -28,17 +28,17 @@ class TestSeasonValidation:
     ]
 
     INVALID_SEASONS = [
-        "2024",           # missing hyphen and second part
-        "24-25",          # short year
-        "2024-2",         # single digit suffix
-        "2024-2526",      # too many digits
-        "DROP TABLE",     # SQL injection attempt
+        "2024",  # missing hyphen and second part
+        "24-25",  # short year
+        "2024-2",  # single digit suffix
+        "2024-2526",  # too many digits
+        "DROP TABLE",  # SQL injection attempt
         "2024-25; DROP TABLE users;--",  # SQL injection
         "2024' OR '1'='1",  # SQL injection
-        "",               # empty
-        "abcd-ef",        # non-numeric
-        "2024--25",       # double hyphen
-        None,             # not a string
+        "",  # empty
+        "abcd-ef",  # non-numeric
+        "2024--25",  # double hyphen
+        None,  # not a string
     ]
 
     @pytest.mark.parametrize("season", VALID_SEASONS)
@@ -57,7 +57,7 @@ class TestUploadTableDeleteBySeason:
 
     def _make_mock_supabase(self):
         """Create a mock supabase client that tracks delete calls."""
-        from unittest.mock import MagicMock, call
+        from unittest.mock import MagicMock
 
         mock_client = MagicMock()
 
@@ -71,8 +71,7 @@ class TestUploadTableDeleteBySeason:
 
     def test_delete_uses_season_column_not_truncate(self):
         """DELETE should filter by season, not TRUNCATE the entire table."""
-        import subprocess
-        from unittest.mock import MagicMock, patch
+        from unittest.mock import MagicMock
 
         from scripts.daily_bronze_update import upload_table
 
@@ -85,7 +84,10 @@ class TestUploadTableDeleteBySeason:
 
         df = pl.DataFrame({"season": ["2024-25", "2024-25"], "col_a": [1, 2]})
 
-        with patch("scripts.daily_bronze_update.get_table_columns", return_value={"season", "col_a"}):
+        with patch(
+            "scripts.daily_bronze_update.get_table_columns",
+            return_value={"season", "col_a"},
+        ):
             upload_table(mock_client, "bronze_fpl_players", df)
 
         # Verify delete was called with .eq("season", "2024-25")
@@ -94,15 +96,16 @@ class TestUploadTableDeleteBySeason:
 
     def test_cli_fallback_rejects_invalid_season(self):
         """CLI fallback should reject invalid season formats."""
-        import subprocess
-        from unittest.mock import MagicMock, patch
+        from unittest.mock import MagicMock
 
         from scripts.daily_bronze_update import upload_table
 
         mock_client, delete_chain = self._make_mock_supabase()
 
         # Make the REST API delete fail so we hit the CLI fallback
-        mock_client.table.return_value.delete.return_value.execute.side_effect = Exception("API error")
+        mock_client.table.return_value.delete.return_value.execute.side_effect = (
+            Exception("API error")
+        )
         mock_client.table.return_value.select.return_value.limit.return_value.execute.return_value = MagicMock(
             data=[{"season": "2024-25"}]
         )
@@ -110,7 +113,10 @@ class TestUploadTableDeleteBySeason:
         # Create a DataFrame with a suspicious "season" value
         df = pl.DataFrame({"season": ["2024-25; DROP TABLE users;--"], "col_a": [1]})
 
-        with patch("scripts.daily_bronze_update.get_table_columns", return_value={"season", "col_a"}):
+        with patch(
+            "scripts.daily_bronze_update.get_table_columns",
+            return_value={"season", "col_a"},
+        ):
             with patch("subprocess.run") as mock_run:
                 upload_table(mock_client, "bronze_fpl_players", df)
 
@@ -120,22 +126,26 @@ class TestUploadTableDeleteBySeason:
     def test_cli_fallback_accepts_valid_season(self):
         """CLI fallback should execute for valid season formats."""
         import os
-        import subprocess
-        from unittest.mock import MagicMock, patch
+        from unittest.mock import MagicMock
 
         from scripts.daily_bronze_update import upload_table
 
         mock_client, delete_chain = self._make_mock_supabase()
 
         # Make the REST API delete fail so we hit the CLI fallback
-        mock_client.table.return_value.delete.return_value.execute.side_effect = Exception("API error")
+        mock_client.table.return_value.delete.return_value.execute.side_effect = (
+            Exception("API error")
+        )
         mock_client.table.return_value.select.return_value.limit.return_value.execute.return_value = MagicMock(
             data=[{"season": "2024-25"}]
         )
 
         df = pl.DataFrame({"season": ["2024-25"], "col_a": [1]})
 
-        with patch("scripts.daily_bronze_update.get_table_columns", return_value={"season", "col_a"}):
+        with patch(
+            "scripts.daily_bronze_update.get_table_columns",
+            return_value={"season", "col_a"},
+        ):
             with patch("subprocess.run") as mock_run:
                 with patch.dict(os.environ, {"SUPABASE_ACCESS_TOKEN": "fake-token"}):
                     upload_table(mock_client, "bronze_fpl_players", df)
@@ -148,7 +158,7 @@ class TestUploadTableDeleteBySeason:
 
     def test_empty_dataframe_skips_delete(self):
         """Empty DataFrames should not trigger any delete."""
-        from unittest.mock import MagicMock, patch
+        from unittest.mock import MagicMock
 
         from scripts.daily_bronze_update import upload_table
 
