@@ -137,7 +137,7 @@ class TestBaselineComparison:
         y_pred = np.array([1.0, 2.0, 3.0, 4.0, 5.0])  # Perfect
 
         results = compare_with_baseline(y_true, y_pred)
-        assert results["improvement_over_mean_baseline_pct"] > 0
+        assert results["improvement_over_mean_baseline_pct"] > 0  # type: ignore[operator]
 
 
 class TestEvaluateModel:

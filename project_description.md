@@ -333,31 +333,31 @@ features = {
     "points_last_3": rolling_avg(points, window=3),
     "points_last_5": rolling_avg(points, window=5),
     "points_last_10": rolling_avg(points, window=10),
-    
+
     # Expected metrics
     "xg_per_90": xg / minutes * 90,
     "xa_per_90": xa / minutes * 90,
     "goals_over_xg": goals_scored - xg,       # finishing over/underperformance
-    
+
     # Fixture difficulty (from FPL API + Dixon-Coles parameters)
     "fdr_next_1": fixture_difficulty_rating(gw + 1),
     "fdr_next_3": avg_fixture_difficulty_rating(gw + 1, gw + 3),
     "fdr_next_5": avg_fixture_difficulty_rating(gw + 1, gw + 5),
-    
+
     # H2H metrics (Option C)
     "avg_points_vs_opponent": player_vs_team.avg_points,
     "avg_xg_vs_opponent": player_vs_team.avg_xg,
     "goals_vs_opponent": player_vs_team.goals,
-    
+
     # Form metrics
     "form_index": weighted_average(last_5_gw),
     "consistency_score": std_dev(last_10_gw),
-    
+
     # Context features
     "opponent_defense_strength": opponent.strong_defense,
     "home_advantage": is_home * 1.1,
     "rest_days": days_since_last_match,
-    
+
     # Availability (hard filter — zero out unavailable players before optimizer)
     "is_available": status == 'a'
 }
@@ -455,18 +455,18 @@ def simulate_match(home_strength, away_strength, h2h_adjustment):
     # Base rate from team strength
     home_lambda = home_strength * home_advantage * 1.0
     away_lambda = away_strength * 0.9  # Away penalty
-    
+
     # H2H adjustment (last 3 seasons)
     home_lambda += h2h_adjustment.home_bonus
     away_lambda += h2h_adjustment.away_bonus
-    
+
     # Monte Carlo simulation
     simulations = []
     for i in range(10000):
         home_goals = np.random.poisson(home_lambda)
         away_goals = np.random.poisson(away_lambda)
         simulations.append((home_goals, away_goals))
-    
+
     return analyze_simulations(simulations)
 ```
 
@@ -681,16 +681,16 @@ features['avg_points_vs_opponent'] = player_vs_team.merge(
 def trigger_retrain(reason: str):
     """
     Manually trigger model retraining
-    
+
     Args:
         reason: str - "manager_change", "major_transfer", "injury"
     """
     logger.info(f"Manual retrain triggered: {reason}")
-    
+
     # Retrain all models
     retrain_player_model()
     retrain_starting_xi_model()
-    
+
     # Log to MLflow
     mlflow.log_param("retrain_reason", reason)
     mlflow.log_param("retrain_date", datetime.now())
@@ -721,7 +721,7 @@ CREATE INDEX idx_fixture_gameweek ON fixtures(gameweek);
 ```python
 # Get player predictions for next gameweek
 query = """
-SELECT 
+SELECT
     p.name,
     p.position,
     p.price,
@@ -838,19 +838,19 @@ def test_full_pipeline():
     """Test end-to-end pipeline"""
     # Ingest data
     data = ingest_all_sources()
-    
+
     # Clean and merge
     cleaned = clean_and_merge(data)
-    
+
     # Engineer features
     features = engineer_features(cleaned)
-    
+
     # Train model
     model = train_player_model(features)
-    
+
     # Predict
     predictions = model.predict(test_features)
-    
+
     assert len(predictions) > 0
 ```
 
@@ -995,29 +995,29 @@ dependencies = [
     "polars>=1.0.0",
     "duckdb>=1.0.0",
     "pandas>=2.0.0",
-    
+
     # ML & Statistics
     "lightgbm>=4.0.0",
     "scikit-learn>=1.3.0",
     "xgboost>=2.0.0",
     "pulp>=2.7.0",
-    
+
     # Data ingestion
     "soccerdata>=0.15.0",
     "requests>=2.31.0",
     "supabase>=2.0.0",
-    
+
     # Validation
     "pandera>=0.18.0",
-    
+
     # Tracking
     "mlflow>=2.9.0",
-    
+
     # UI
     "streamlit>=1.28.0",
     "streamlit-aggrid>=1.0.0",
     "plotly>=5.18.0",
-    
+
     # Utilities
     "python-dotenv>=1.0.0",
 ]

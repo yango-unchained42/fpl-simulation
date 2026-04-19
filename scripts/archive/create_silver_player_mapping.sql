@@ -15,9 +15,9 @@ CREATE TABLE IF NOT EXISTS silver_player_mapping (
     requires_manual_review BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     PRIMARY KEY (unified_player_id, season),
-    
+
     -- Constraints
     CHECK (confidence_score >= 0.0 AND confidence_score <= 1.0),
     CHECK (source IN ('exact', 'fuzzy', 'manual'))

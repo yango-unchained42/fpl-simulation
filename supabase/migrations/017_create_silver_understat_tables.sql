@@ -21,16 +21,16 @@ CREATE TABLE IF NOT EXISTS silver_understat_player_stats (
     season TEXT NOT NULL,
     league_id INTEGER,
     season_id INTEGER,
-    
+
     -- Data quality flags
     data_quality_score REAL DEFAULT 1.0,
     is_incomplete BOOLEAN DEFAULT FALSE,
     missing_fields TEXT[],
-    
+
     -- Metadata
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     PRIMARY KEY (player_id, gameweek, season)
 );
 
@@ -70,16 +70,16 @@ CREATE TABLE IF NOT EXISTS silver_understat_match_stats (
     home_team_code TEXT,
     league_id INTEGER,
     season_id INTEGER,
-    
+
     -- Data quality flags
     data_quality_score REAL DEFAULT 1.0,
     is_incomplete BOOLEAN DEFAULT FALSE,
     missing_fields TEXT[],
-    
+
     -- Metadata
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     PRIMARY KEY (game_id, season)
 );
 
@@ -102,28 +102,28 @@ CREATE TABLE IF NOT EXISTS silver_understat_shots_summary (
     xg REAL,
     avg_location_x REAL,
     avg_location_y REAL,
-    
+
     -- Breakdown by situation
     shots_open_play INTEGER,
     shots_from_freekick INTEGER,
     shots_from_corners INTEGER,
     shots_from_penalty INTEGER,
-    
+
     -- Breakdown by body part
     shots_right_foot INTEGER,
     shots_left_foot INTEGER,
     shots_head INTEGER,
     shots_other INTEGER,
-    
+
     -- Data quality flags
     data_quality_score REAL DEFAULT 1.0,
     is_incomplete BOOLEAN DEFAULT FALSE,
     missing_fields TEXT[],
-    
+
     -- Metadata
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     PRIMARY KEY (player_id, season, gameweek)
 );
 

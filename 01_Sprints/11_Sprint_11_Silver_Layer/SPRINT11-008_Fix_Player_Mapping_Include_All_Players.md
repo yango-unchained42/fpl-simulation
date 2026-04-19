@@ -44,31 +44,31 @@ In `src/silver/player_mapping.py`:
 ```python
 def build_season_mappings(season: str) -> pl.DataFrame:
     """Build player mappings for a single season.
-    
+
     Strategy:
     1. Load all players from FPL (current) or Vaastav (historical)
     2. Generate unified_player_id for each
     3. Left join Understat to add understat_id where available
     """
     sources = get_season_sources(season)
-    
+
     # Step 1: Get all players from primary source
     if sources["fpl"]:
         primary_df = load_fpl_players(season)
         # ... transform to have fpl_id, player_name, position, team
     else:
-        primary_df = load_vaastav_players(season)  
+        primary_df = load_vaastav_players(season)
         # ... transform to have vaastav_id, player_name, position, team
-    
+
     # Step 2: Generate UUID for each player (via Supabase or locally)
     # For now, let the DB generate it on upsert
-    
+
     # Step 3: Left join Understat
     if sources["understat"]:
         understat_df = load_understat_players(season)
         # Match on name + team, add understat_id
         primary_df = primary_df.left_join(understat_matching, on=..., how="left")
-    
+
     return primary_df
 ```
 
@@ -87,7 +87,7 @@ def build_season_mappings(season: str) -> pl.DataFrame:
 - Current: mapping has ~570-584 players per season, but vaastav has ~740-870 unique players
 - The issue is the union-first approach is not implemented
 
-### 2026-04-14 17:45  
+### 2026-04-14 17:45
 - Created this ticket to track the fix
 - Pipeline now correctly uses fetch_all_paginated and looks up both fpl_id AND vaastav_id
 - But the source data (silver_player_mapping) is incomplete
@@ -128,7 +128,7 @@ def build_season_mappings(season: str) -> pl.DataFrame:
 ### 2026-04-14 20:00
 - Fixed 2025-26 Understat matching
 - Problem: FPL team names were "Tottenham", Understat used numeric team IDs
-- Solution: 
+- Solution:
   1. Created `daily_team_mapping_update.py` script to derive understat_team_id
   2. Updated silver_team_mapping with understat_team_id for 2025-26
   3. Added `get_understat_team_id_lookup()` function in player_mapping.py
