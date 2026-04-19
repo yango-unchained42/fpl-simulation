@@ -25,11 +25,19 @@ logger = logging.getLogger(__name__)
 def truncate_table(client: Any, table_name: str) -> None:
     """Truncate a Silver table before reload.
 
-    Tries REST API delete first, falls back to supabase CLI.
+    Tries REST API delete first (column-agnostic), falls back to supabase CLI.
     Gracefully handles missing CLI.
     """
     try:
-        client.table(table_name).delete().neq("season", "NEVER_MATCH").execute()
+        # Use a column-agnostic always-true filter: fetch one row to discover
+        # an available column, then delete where that column is not null.
+        probe = client.table(table_name).select("*").limit(1).execute()
+        if probe.data:
+            col = next(iter(probe.data[0]))
+            client.table(table_name).delete().not_.is_(col, "null").execute()
+        else:
+            # Table is already empty
+            pass
         logger.info(f"  Cleared {table_name}")
     except Exception as e:
         logger.warning(f"  Could not clear {table_name}: {e}")
@@ -151,14 +159,23 @@ def safe_upsert(
             logger.info(f"    Skipped {skipped} existing records in {table}")
 
     written = 0
+    failed_batches = 0
     for i in range(0, len(records), BATCH_SIZE):
         batch = records[i : i + BATCH_SIZE]
         try:
             client.table(table).upsert(batch).execute()
             written += len(batch)
         except Exception as e:
-            logger.error(f"    Batch {i // BATCH_SIZE} failed: {e}")
+            failed_batches += 1
+            logger.error(
+                f"    Batch {i // BATCH_SIZE} failed ({len(batch)} records): {e}"
+            )
 
+    if failed_batches:
+        logger.warning(
+            f"    {failed_batches}/{(len(records) + BATCH_SIZE - 1) // BATCH_SIZE} "
+            f"batches failed in {table}"
+        )
     logger.info(f"    Upserted {written} records to {table}")
     return written
 

@@ -8,9 +8,9 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from src.config import BATCH_SIZE, CURRENT_SEASON
+from src.config import CURRENT_SEASON
 from src.utils.data_cleaning import clean_and_flag_record
-from src.utils.safe_upsert import truncate_table
+from src.utils.safe_upsert import safe_upsert, truncate_table
 from src.utils.supabase_utils import fetch_all_paginated
 
 logger = logging.getLogger(__name__)
@@ -123,12 +123,15 @@ def update_fpl_fantasy_stats(client: Any, season: str = CURRENT_SEASON) -> bool:
         filtered.pop("element", None)
         transformed.append(clean_and_flag_record(filtered, category="gw"))
 
-    for i in range(0, len(transformed), BATCH_SIZE):
-        client.table("silver_fpl_fantasy_stats").upsert(
-            transformed[i : i + BATCH_SIZE]
-        ).execute()
+    written = safe_upsert(
+        client,
+        "silver_fpl_fantasy_stats",
+        transformed,
+        business_key=["season", "unified_player_id", "gameweek"],
+        season=season,
+    )
 
-    logger.info(f"    Updated {len(transformed)} fantasy stats")
+    logger.info(f"    Updated {written} fantasy stats")
     return True
 
 
@@ -241,10 +244,13 @@ def update_fpl_player_stats(client: Any, season: str = CURRENT_SEASON) -> bool:
         filtered.pop("fixture", None)
         transformed.append(clean_and_flag_record(filtered, category="gw"))
 
-    for i in range(0, len(transformed), BATCH_SIZE):
-        client.table("silver_fpl_player_stats").upsert(
-            transformed[i : i + BATCH_SIZE]
-        ).execute()
+    written = safe_upsert(
+        client,
+        "silver_fpl_player_stats",
+        transformed,
+        business_key=["season", "unified_player_id", "match_id"],
+        season=season,
+    )
 
-    logger.info(f"    Updated {len(transformed)} player stats")
+    logger.info(f"    Updated {written} player stats")
     return True
