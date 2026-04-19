@@ -22,13 +22,13 @@ Thresholds:
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 import polars as pl
 from dotenv import load_dotenv
 
-from src.config import ALL_SEASONS, BATCH_SIZE, CURRENT_SEASON
+from src.config import ALL_SEASONS, BATCH_SIZE
 from src.data.database import get_supabase_client
-from src.silver.player_overrides import get_override_lookup
 from src.utils.name_resolver import (
     build_name_mapping,
     standardize_name,

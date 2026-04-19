@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from src.utils.safe_upsert import (
     clean_records_for_upload,
     deduplicate_by_key,
