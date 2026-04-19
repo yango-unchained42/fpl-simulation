@@ -7,13 +7,13 @@ CREATE TABLE IF NOT EXISTS silver_fpl_fantasy_stats (
     player_id INTEGER NOT NULL,
     season TEXT NOT NULL,
     gameweek INTEGER NOT NULL,
-    
+
     -- Fantasy ownership data (from GW)
     value INTEGER,
     selected INTEGER,
     transfers_in INTEGER,
     transfers_out INTEGER,
-    
+
     -- Player state (from player state / snapshot)
     now_cost INTEGER,
     chance_of_playing_next_round INTEGER,
@@ -28,16 +28,16 @@ CREATE TABLE IF NOT EXISTS silver_fpl_fantasy_stats (
     corners_and_indirect_freekicks_order INTEGER,
     direct_freekicks_order INTEGER,
     penalties_order INTEGER,
-    
+
     -- Data quality flags
     data_quality_score REAL DEFAULT 1.0,
     is_incomplete BOOLEAN DEFAULT FALSE,
     missing_fields TEXT[],
-    
+
     -- Metadata
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     PRIMARY KEY (player_id, season, gameweek)
 );
 
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS silver_fpl_player_stats (
     season TEXT NOT NULL,
     gameweek INTEGER NOT NULL,
     source TEXT NOT NULL,  -- 'fpl' or 'vaastav'
-    
+
     -- Match stats
     total_points INTEGER,
     minutes INTEGER,
@@ -64,23 +64,23 @@ CREATE TABLE IF NOT EXISTS silver_fpl_player_stats (
     assists INTEGER,
     clean_sheets INTEGER,
     goals_conceded INTEGER,
-    
+
     -- Expected stats
     expected_goals REAL,
     expected_assists REAL,
     expected_goal_involvements REAL,
     expected_goals_conceded REAL,
-    
+
     -- Bonus/bps
     bonus INTEGER,
     bps INTEGER,
-    
+
     -- ICT
     influence REAL,
     creativity REAL,
     threat REAL,
     ict_index REAL,
-    
+
     -- Other match stats
     own_goals INTEGER,
     penalties_saved INTEGER,
@@ -89,13 +89,13 @@ CREATE TABLE IF NOT EXISTS silver_fpl_player_stats (
     red_cards INTEGER,
     saves INTEGER,
     starts INTEGER,
-    
+
     -- FPL-only (NULL for vaastav)
     clearances_blocks_interceptions INTEGER,
     recoveries INTEGER,
     tackles INTEGER,
     defensive_contribution REAL,
-    
+
     -- Match context
     was_home BOOLEAN,
     opponent_team TEXT,
@@ -103,16 +103,16 @@ CREATE TABLE IF NOT EXISTS silver_fpl_player_stats (
     kickoff_time TEXT,
     team_a_score INTEGER,
     team_h_score INTEGER,
-    
+
     -- Data quality flags
     data_quality_score REAL DEFAULT 1.0,
     is_incomplete BOOLEAN DEFAULT FALSE,
     missing_fields TEXT[],
-    
+
     -- Metadata
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     PRIMARY KEY (player_id, gameweek, season, source)
 );
 

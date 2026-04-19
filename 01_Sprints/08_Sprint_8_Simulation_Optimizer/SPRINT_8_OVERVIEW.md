@@ -17,8 +17,8 @@
 ## Tickets
 
 ### SPRINT8-001: Monte Carlo Simulation Engine
-**Status:** Awaiting Development  
-**Priority:** High  
+**Status:** Awaiting Development
+**Priority:** High
 **Labels:** `simulation` `monte-carlo`
 
 **Description:**
@@ -35,15 +35,15 @@ Implement Monte Carlo simulation to generate point distributions for each player
 - [ ] Configurable number of simulations
 - [ ] Documentation updated
 
-**Assignee:** @Developer  
-**Status:** Awaiting Development  
+**Assignee:** @Developer
+**Status:** Awaiting Development
 **Comments:**
 
 ---
 
 ### SPRINT8-002: Team Optimizer Implementation
-**Status:** Awaiting Development  
-**Priority:** High  
+**Status:** Awaiting Development
+**Priority:** High
 **Labels:** `optimizer` `algorithm`
 
 **Description:**
@@ -60,15 +60,15 @@ Implement optimizer to select optimal team within FPL constraints.
 - [ ] Optimization time <5 minutes
 - [ ] Documentation updated
 
-**Assignee:** @Developer  
-**Status:** Awaiting Development  
+**Assignee:** @Developer
+**Status:** Awaiting Development
 **Comments:**
 
 ---
 
 ### SPRINT8-003: Projection & Ranking System
-**Status:** Awaiting Development  
-**Priority:** High  
+**Status:** Awaiting Development
+**Priority:** High
 **Labels:** `projection` `ranking`
 
 **Description:**
@@ -86,15 +86,15 @@ Generate player projections and rankings based on simulation results.
 - [ ] Projections exported to Supabase
 - [ ] Documentation updated
 
-**Assignee:** @Developer  
-**Status:** Awaiting Development  
+**Assignee:** @Developer
+**Status:** Awaiting Development
 **Comments:**
 
 ---
 
 ### SPRINT8-004: Simulation & Optimizer Testing
-**Status:** Awaiting Development  
-**Priority:** High  
+**Status:** Awaiting Development
+**Priority:** High
 **Labels:** `testing` `simulation`
 
 **Description:**
@@ -112,15 +112,15 @@ Comprehensive testing for simulation and optimizer components.
 - [ ] Test coverage >80%
 - [ ] All tests passing
 
-**Assignee:** @TestSpecialist  
-**Status:** Awaiting Development  
+**Assignee:** @TestSpecialist
+**Status:** Awaiting Development
 **Comments:**
 
 ---
 
 ### SPRINT8-005: Simulation & Optimizer Review
-**Status:** Awaiting Review  
-**Priority:** High  
+**Status:** Awaiting Review
+**Priority:** High
 **Labels:** `review` `simulation`
 
 **Description:**
@@ -136,17 +136,17 @@ Project Owner review of simulation and optimizer functionality.
 - [ ] System approved for integration
 - [ ] Documentation approved
 
-**Assignee:** @ProjectOwner  
-**Status:** Awaiting Review  
+**Assignee:** @ProjectOwner
+**Status:** Awaiting Review
 **Comments:**
 
 ---
 
 ## Sprint Summary
 
-**Total Tickets:** 5  
-**Development Tickets:** 3  
-**Testing Tickets:** 1  
+**Total Tickets:** 5
+**Development Tickets:** 3
+**Testing Tickets:** 1
 **Review Tickets:** 1
 
 **Expected Outcomes:**

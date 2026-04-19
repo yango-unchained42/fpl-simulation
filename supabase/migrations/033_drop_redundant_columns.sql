@@ -1,5 +1,5 @@
 -- Migration: 033_drop_redundant_columns_from_silver_fpl_player_stats
--- Reason: 
+-- Reason:
 -- 1. Opponent team can be derived from match data (match_id + was_home)
 -- 2. player_id is replaced by unified_player_id (the canonical identifier)
 -- 3. fixture and opponent_team are redundant - using match_id instead

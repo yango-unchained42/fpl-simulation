@@ -1,7 +1,7 @@
 -- Migration 024: Drop obsolete team ID columns from silver_match_mapping
 -- These are now replaced by unified_team_id columns
 
-ALTER TABLE silver_match_mapping 
+ALTER TABLE silver_match_mapping
 DROP COLUMN IF EXISTS home_team_id,
 DROP COLUMN IF EXISTS away_team_id;
 

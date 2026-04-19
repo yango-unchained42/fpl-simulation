@@ -5,7 +5,7 @@
 ALTER TABLE bronze_understat_player_stats ADD COLUMN IF NOT EXISTS league_id text;
 ALTER TABLE bronze_understat_player_stats ADD COLUMN IF NOT EXISTS season_id integer;
 
--- bronze_understat_shots  
+-- bronze_understat_shots
 ALTER TABLE bronze_understat_shots ADD COLUMN IF NOT EXISTS league_id text;
 ALTER TABLE bronze_understat_shots ADD COLUMN IF NOT EXISTS season_id integer;
 ALTER TABLE bronze_understat_shots ADD COLUMN IF NOT EXISTS shot_id integer;
