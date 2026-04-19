@@ -17,7 +17,7 @@ result = (
 print(f"Total: {len(result.data)}")
 
 # Group by season
-from collections import Counter
+from collections import Counter  # noqa: E402
 
 seasons = Counter(r.get("season") for r in result.data)
 print(f"Seasons: {dict(seasons)}")

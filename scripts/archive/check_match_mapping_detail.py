@@ -2,7 +2,14 @@
 """Check what's actually in match_mapping"""
 
 import os
+<<<<<<< HEAD
 from collections import Counter
+=======
+from collections import Counter  # noqa: E402
+
+from dotenv import load_dotenv
+from supabase import create_client
+>>>>>>> origin/main
 
 from dotenv import load_dotenv
 from supabase import create_client
@@ -49,7 +56,7 @@ result = (
     .execute()
 )
 dates = [r.get("match_date") for r in result.data]
-from collections import Counter
+from collections import Counter  # noqa: E402
 
 date_counts = Counter(dates)
 print(f"Total: {len(dates)}, unique: {len(date_counts)}")

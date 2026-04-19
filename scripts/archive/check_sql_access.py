@@ -15,7 +15,7 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 print("Creating new table without constraints...")
 
 # Check CLI availability
-import subprocess
+import subprocess  # noqa: E402
 
 result = subprocess.run(["which", "psql"], capture_output=True, text=True)
 if result.returncode == 0:

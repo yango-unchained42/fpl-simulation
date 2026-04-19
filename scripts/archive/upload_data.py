@@ -437,7 +437,7 @@ def upload_bronze_vaastav_fixtures(client: Any) -> None:
 
             # Get unique home games
             home = (
-                df.filter(pl.col("was_home") == True)
+                df.filter(pl.col("was_home"))
                 .select(
                     [
                         "fixture",
@@ -461,7 +461,7 @@ def upload_bronze_vaastav_fixtures(client: Any) -> None:
 
             # Get unique away games
             away = (
-                df.filter(pl.col("was_home") == False)
+                df.filter(~pl.col("was_home"))
                 .select(["fixture", "team", "opponent_team"])
                 .unique(subset=["fixture"])
                 .rename({"team": "team_a", "opponent_team": "team_h"})

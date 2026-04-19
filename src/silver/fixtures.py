@@ -29,6 +29,33 @@ def _load_team_lookup(client: Any, season: str) -> dict[tuple[str, int], str]:
     return lookup
 
 
+<<<<<<< HEAD
+=======
+def _truncate_table(client: Any, table_name: str) -> None:
+    """Truncate a Silver table before reload."""
+    import os
+    import subprocess
+
+    token = os.getenv("SUPABASE_ACCESS_TOKEN")
+    if not token:
+        return
+
+    try:
+        result = subprocess.run(
+            ["supabase", "db", "query", "--linked", f"TRUNCATE {table_name} CASCADE;"],
+            capture_output=True,
+            text=True,
+            env={**os.environ, "SUPABASE_ACCESS_TOKEN": token},
+        )
+        if result.returncode != 0:
+            logger.warning(f"  Truncate failed for {table_name}: {result.stderr}")
+    except FileNotFoundError:
+        logger.debug(
+            f"  supabase CLI not available — skipping truncate for {table_name}"
+        )
+
+
+>>>>>>> origin/main
 def update_fixtures(client: Any, season: str = CURRENT_SEASON) -> bool:
     """Update silver_fixtures from bronze_fpl_fixtures with UUID resolution."""
     logger.info("  Updating silver fixtures...")

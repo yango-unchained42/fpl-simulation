@@ -5,10 +5,10 @@ from __future__ import annotations
 from src.silver.player_mapping import (
     EXACT_MATCH,
     HIGH_CONFIDENCE,
+    LAST_NAME_BOOST,
     LOW_CONFIDENCE,
     MEDIUM_CONFIDENCE,
     MIN_FUZZY_THRESHOLD,
-    LAST_NAME_BOOST,
     TRANSFER_CONFIDENCE,
     _normalize_position,
 )

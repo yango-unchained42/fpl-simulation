@@ -22,6 +22,7 @@ Thresholds:
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 import polars as pl
 from dotenv import load_dotenv
