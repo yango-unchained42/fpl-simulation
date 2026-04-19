@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Find where bad season data is coming from."""
 
-from dotenv import load_dotenv
 import os
+
+from dotenv import load_dotenv
 from supabase import create_client
 
 load_dotenv()
@@ -28,7 +29,7 @@ for table in [
 # Also check for any invalid-looking seasons
 print("\n=== Total by season in silver_fixtures ===")
 result = client.table("silver_fixtures").select("season").execute()
-from collections import Counter
+from collections import Counter  # noqa: E402
 
 seasons = Counter(r.get("season") for r in result.data if r.get("season"))
 for s, c in sorted(seasons.items()):

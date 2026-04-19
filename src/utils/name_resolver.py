@@ -20,7 +20,6 @@ MAPPING_FILE = Path("data/raw/name_mapping.json")
 KNOWN_VARIATIONS: dict[str, str] = {
     # Goalkeepers
     "Alisson Ramses Becker": "Alisson",
-    "Alisson": "Alisson",
     "Ederson Santana de Moraes": "Ederson",
     "Kepa Arrizabalaga": "Kepa",
     "David de Gea Quintana": "David de Gea",
@@ -33,7 +32,6 @@ KNOWN_VARIATIONS: dict[str, str] = {
     "Son Heung min": "Son Heung-min",
     "Pascal Gro\u00df": "Pascal Gross",
     "Jo\u00e3o Cancelo": "Joao Cancelo",
-    "Jo\u00e3o Pedro": "Joao Pedro",
     "Matheus Luiz Nunes": "Matheus Nunes",
     "Gabriel dos Santos Magalh\u00e3es": "Gabriel Magalh\u00e3es",
     "Gabriel dos Santos Magalhaes": "Gabriel Magalh\u00e3es",
@@ -55,29 +53,17 @@ KNOWN_VARIATIONS: dict[str, str] = {
     # Rodri variants
     "Rodri": "Rodrigo Hernandez",
     "Rodrigo Hernández Cascante": "Rodrigo Hernandez",
-    # Diogo Jota variants
-    "Diogo Jota": "Diogo Teixeira da Silva",
-    "Diogo José Teixeira da Silva": "Diogo Teixeira da Silva",
     # Beto variants
     "Beto": "Norberto Bercique Gomes Betuncal",
     "Norberto Bercique Gomes": "Norberto Bercique Gomes Betuncal",
     # Amad Diallo
     "Amad Diallo Traore": "Amad Diallo",
-    # Son Heung-Min
-    "Son Heung-Min": "Son Heung-min",
-    # Igor Julio
-    "Igor Julio": "Igor Julio dos Santos de Paulo",
-    # Additional players that need explicit mapping
-    "Jota Silva": "João Pedro Ferreira da Silva",
     # More players that need explicit mapping for 2025-26
     "Alisson": "Alisson Becker",
     "Reinildo": "Reinildo Mandava",
-    "Sávio": "Sávio Moreira de Oliveira",
     # Additional historical season mappings
     # Antony
     "Antony": "Antony Matheus dos Santos",
-    # Bernardo Silva
-    "Bernardo Silva": "Bernardo Veiga de Carvalho e Silva",
     # Danilo
     "Danilo": "Danilo dos Santos de Oliveira",
     # Douglas Luiz
@@ -95,9 +81,6 @@ KNOWN_VARIATIONS: dict[str, str] = {
     "Rúben Dias": "Ruben Santos Gato Alves Dias",
     # Rúben Neves - same issue (but he plays for Wolves, different player)
     "Rúben Neves": "Ruben Santos Gato Alves Dias",
-    # Son Heung-Min - UNDERSTAT uses "Son Heung-Min", VAASTAV uses "Heung-Min Son"
-    "Son Heung-Min": "Heung-Min Son",
-    "Son Heung min": "Heung-Min Son",
     # Felipe
     "Felipe": "Felipe Augusto de Almeida Monteiro",
     # Willian
@@ -140,11 +123,6 @@ KNOWN_VARIATIONS: dict[str, str] = {
     "Bernardo Silva": "Bernardo Silva",
     "Gabriel": "Gabriel Magalhães",
     "Son Heung-min": "Son Heung-min",
-    # Remaining 2025-26 unmatched players
-    "Ben White": "Benjamin White",
-    "Wataru Endo": "Endo Wataru",
-    "Jair": "Jair Cunha",
-    "Jota Silva": "Jota",
     # Team name variations
     "Man City": "Manchester City",
     "Manchester City": "Manchester City",

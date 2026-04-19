@@ -203,9 +203,11 @@ def compute_shap_values(
     return {
         "shap_values": shap_values,
         "feature_importance": importance,
-        "base_value": float(explainer.expected_value)
-        if hasattr(explainer.expected_value, "__float__")
-        else float(explainer.expected_value[0]),
+        "base_value": (
+            float(explainer.expected_value)
+            if hasattr(explainer.expected_value, "__float__")
+            else float(explainer.expected_value[0])
+        ),
     }
 
 
