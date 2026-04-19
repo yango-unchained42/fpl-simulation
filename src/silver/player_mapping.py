@@ -26,8 +26,8 @@ import logging
 import polars as pl
 from dotenv import load_dotenv
 
-from src.config import ALL_SEASONS, CURRENT_SEASON
-from src.data.database import get_supabase_client, write_to_supabase
+from src.config import ALL_SEASONS, BATCH_SIZE, CURRENT_SEASON
+from src.data.database import get_supabase_client
 from src.silver.player_overrides import get_override_lookup
 from src.utils.name_resolver import (
     build_name_mapping,
@@ -868,16 +868,18 @@ def upload_to_supabase(mappings: pl.DataFrame) -> int:
     total = len(records)
     logger.info(f"Uploading {total} deduplicated player mappings...")
 
-    # Upsert in batches — no delete first
-    for i in range(0, total, 500):
-        batch = records[i : i + 500]
+    # Upsert in batches — track failures
+    written = 0
+    for i in range(0, total, BATCH_SIZE):
+        batch = records[i : i + BATCH_SIZE]
         try:
             client.table("silver_player_mapping").upsert(batch).execute()
+            written += len(batch)
         except Exception as e:
-            logger.error(f"  Batch {i // 500} failed: {e}")
+            logger.error(f"  Batch {i // BATCH_SIZE} failed: {e}")
 
-    logger.info(f"  Uploaded {total} player mappings")
-    return total
+    logger.info(f"  Uploaded {written}/{total} player mappings")
+    return written
 
 
 def run() -> None:
