@@ -30,12 +30,22 @@ def get_table_counts(season: str | None = None) -> dict[str, int]:
     client = get_supabase()
 
     tables = [
-        "bronze_fpl_players", "bronze_fpl_teams", "bronze_fpl_fixtures", "bronze_fpl_gw",
-        "bronze_understat_player_stats", "bronze_understat_match_stats", "bronze_understat_shots",
-        "silver_player_mapping", "silver_team_mapping", "silver_match_mapping",
-        "silver_fpl_player_stats", "silver_fpl_fantasy_stats",
-        "silver_understat_player_stats", "silver_understat_match_stats",
-        "silver_fixtures", "silver_unified_player_stats",
+        "bronze_fpl_players",
+        "bronze_fpl_teams",
+        "bronze_fpl_fixtures",
+        "bronze_fpl_gw",
+        "bronze_understat_player_stats",
+        "bronze_understat_match_stats",
+        "bronze_understat_shots",
+        "silver_player_mapping",
+        "silver_team_mapping",
+        "silver_match_mapping",
+        "silver_fpl_player_stats",
+        "silver_fpl_fantasy_stats",
+        "silver_understat_player_stats",
+        "silver_understat_match_stats",
+        "silver_fixtures",
+        "silver_unified_player_stats",
     ]
 
     counts: dict[str, int] = {}
@@ -63,7 +73,8 @@ def get_mapping_quality(season: str | None = None) -> dict[str, Any]:
     # Fetch all mappings (or filtered by season)
     filters = {"season": season} if season else None
     all_mappings = fetch_all_paginated(
-        client, "silver_player_mapping",
+        client,
+        "silver_player_mapping",
         select_cols="season,fpl_id,vaastav_id,understat_id,confidence_score",
         filters=filters,
     )
@@ -79,8 +90,12 @@ def get_mapping_quality(season: str | None = None) -> dict[str, Any]:
         s = m.get("season", "unknown")
         if s not in by_season:
             by_season[s] = {
-                "total": 0, "fpl": 0, "vaastav": 0, "understat": 0,
-                "fpl_to_understat": 0, "vaastav_to_understat": 0,
+                "total": 0,
+                "fpl": 0,
+                "vaastav": 0,
+                "understat": 0,
+                "fpl_to_understat": 0,
+                "vaastav_to_understat": 0,
                 "high_confidence": 0,
             }
 
@@ -106,10 +121,17 @@ def get_mapping_quality(season: str | None = None) -> dict[str, Any]:
             d["high_confidence"] += 1
 
     # Calculate rates
-    result: dict[str, Any] = {"by_season": {}, "totals": {
-        "total": 0, "fpl": 0, "vaastav": 0, "understat": 0,
-        "fpl_to_understat": 0, "vaastav_to_understat": 0,
-    }}
+    result: dict[str, Any] = {
+        "by_season": {},
+        "totals": {
+            "total": 0,
+            "fpl": 0,
+            "vaastav": 0,
+            "understat": 0,
+            "fpl_to_understat": 0,
+            "vaastav_to_understat": 0,
+        },
+    }
 
     for s, d in by_season.items():
         fpl_rate = d["fpl_to_understat"] / d["fpl"] * 100 if d["fpl"] else 0
@@ -126,12 +148,12 @@ def get_mapping_quality(season: str | None = None) -> dict[str, Any]:
 
     # Overall rates
     t = result["totals"]
-    t["fpl_to_understat_rate"] = round(
-        t["fpl_to_understat"] / t["fpl"] * 100, 1
-    ) if t["fpl"] else 0
-    t["vaastav_to_understat_rate"] = round(
-        t["vaastav_to_understat"] / t["vaastav"] * 100, 1
-    ) if t["vaastav"] else 0
+    t["fpl_to_understat_rate"] = (
+        round(t["fpl_to_understat"] / t["fpl"] * 100, 1) if t["fpl"] else 0
+    )
+    t["vaastav_to_understat_rate"] = (
+        round(t["vaastav_to_understat"] / t["vaastav"] * 100, 1) if t["vaastav"] else 0
+    )
 
     return result
 
@@ -213,20 +235,26 @@ def format_metrics_report(metrics: dict[str, Any]) -> str:
 
     # Mapping quality
     mq = metrics["mapping_quality"]
-    lines.append(f"\n🔗 Player Mapping Quality:")
+    lines.append("\n🔗 Player Mapping Quality:")
     if "totals" in mq:
         t = mq["totals"]
         lines.append(f"  Total mappings:     {t['total']:>8,}")
         lines.append(f"  FPL players:        {t['fpl']:>8,}")
         lines.append(f"  Vaastav players:    {t['vaastav']:>8,}")
         lines.append(f"  Understat players:  {t['understat']:>8,}")
-        lines.append(f"  FPL→Understat:      {t['fpl_to_understat']:>8,} ({t['fpl_to_understat_rate']}%)")
-        lines.append(f"  Vaastav→Understat:  {t['vaastav_to_understat']:>8,} ({t['vaastav_to_understat_rate']}%)")
+        lines.append(
+            f"  FPL→Understat:      {t['fpl_to_understat']:>8,} ({t['fpl_to_understat_rate']}%)"
+        )
+        lines.append(
+            f"  Vaastav→Understat:  {t['vaastav_to_understat']:>8,} ({t['vaastav_to_understat_rate']}%)"
+        )
 
     # By season
     if "by_season" in mq:
-        lines.append(f"\n  By season:")
-        lines.append(f"  {'Season':<10} {'FPL':>6} {'US Map':>7} {'US%':>7} {'VA':>6} {'US Map':>7} {'US%':>7}")
+        lines.append("\n  By season:")
+        lines.append(
+            f"  {'Season':<10} {'FPL':>6} {'US Map':>7} {'US%':>7} {'VA':>6} {'US Map':>7} {'US%':>7}"
+        )
         for s in sorted(mq["by_season"].keys()):
             d = mq["by_season"][s]
             lines.append(
@@ -236,7 +264,7 @@ def format_metrics_report(metrics: dict[str, Any]) -> str:
             )
 
     # Duplicates
-    lines.append(f"\n⚠️  Duplicates:")
+    lines.append("\n⚠️  Duplicates:")
     for table, count in metrics["duplicates"].items():
         status = "❌" if count > 0 else "✅"
         lines.append(f"  {status} {table}: {count}")

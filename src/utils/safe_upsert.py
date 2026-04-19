@@ -59,7 +59,9 @@ def deduplicate_by_key(
     deduped = list(seen.values())
     removed = len(records) - len(deduped)
     if removed > 0:
-        logger.info(f"    Deduped {len(records)} → {len(deduped)} records (removed {removed})")
+        logger.info(
+            f"    Deduped {len(records)} → {len(deduped)} records (removed {removed})"
+        )
 
     return deduped
 
@@ -84,7 +86,9 @@ def load_existing_keys(
     select_cols = ",".join(key_columns)
     filters = {"season": season} if season else None
 
-    existing = fetch_all_paginated(client, table, select_cols=select_cols, filters=filters)
+    existing = fetch_all_paginated(
+        client, table, select_cols=select_cols, filters=filters
+    )
     keys = set()
     for rec in existing:
         key = tuple(rec.get(col) for col in key_columns)
@@ -131,7 +135,11 @@ def safe_upsert(
     if skip_existing:
         existing_keys = load_existing_keys(client, table, business_key, season)
         before = len(records)
-        records = [r for r in records if tuple(r.get(c) for c in business_key) not in existing_keys]
+        records = [
+            r
+            for r in records
+            if tuple(r.get(c) for c in business_key) not in existing_keys
+        ]
         skipped = before - len(records)
         if skipped > 0:
             logger.info(f"    Skipped {skipped} existing records in {table}")

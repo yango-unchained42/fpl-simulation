@@ -42,7 +42,9 @@ class TestDeduplicateByKey:
             {"season": "2024-25", "fpl_id": 1, "data_quality_score": 0.9},
             {"season": "2024-25", "fpl_id": 1, "data_quality_score": 0.7},
         ]
-        result = deduplicate_by_key(records, ["season", "fpl_id"], score_column="data_quality_score")
+        result = deduplicate_by_key(
+            records, ["season", "fpl_id"], score_column="data_quality_score"
+        )
         assert len(result) == 1
         assert result[0]["data_quality_score"] == 0.9
 
@@ -62,7 +64,9 @@ class TestDeduplicateByKey:
             {"season": "2024-25", "fpl_id": 1, "vaastav_id": 10, "score": 0.6},
             {"season": "2025-26", "fpl_id": 1, "vaastav_id": 10, "score": 0.9},
         ]
-        result = deduplicate_by_key(records, ["season", "fpl_id", "vaastav_id"], score_column="score")
+        result = deduplicate_by_key(
+            records, ["season", "fpl_id", "vaastav_id"], score_column="score"
+        )
         assert len(result) == 2
 
     def test_score_column_none_treated_as_zero(self) -> None:
@@ -89,7 +93,12 @@ class TestCleanRecordsForUpload:
 
     def test_removes_default_columns(self) -> None:
         records = [
-            {"id": 1, "name": "Salah", "created_at": "2024-01-01", "updated_at": "2024-01-02"},
+            {
+                "id": 1,
+                "name": "Salah",
+                "created_at": "2024-01-01",
+                "updated_at": "2024-01-02",
+            },
         ]
         result = clean_records_for_upload(records)
         assert len(result) == 1
@@ -136,7 +145,9 @@ class TestLoadExistingKeys:
             {"season": "2024-25", "fpl_id": 2},
         ]
         client = MagicMock()
-        result = load_existing_keys(client, "silver_player_mapping", ["season", "fpl_id"])
+        result = load_existing_keys(
+            client, "silver_player_mapping", ["season", "fpl_id"]
+        )
         assert result == {("2024-25", 1), ("2024-25", 2)}
 
     @patch("src.utils.safe_upsert.fetch_all_paginated")
@@ -184,12 +195,16 @@ class TestSafeUpsert:
         ]
         result = safe_upsert(client, "table", records, ["season", "fpl_id"])
         assert result == 3
-        assert client.table.return_value.upsert.call_count == 2  # 3 records / batch_size 2 = 2 batches
+        assert (
+            client.table.return_value.upsert.call_count == 2
+        )  # 3 records / batch_size 2 = 2 batches
 
     @patch("src.utils.safe_upsert.BATCH_SIZE", 10)
     def test_batch_failure_does_not_stop(self) -> None:
         client = MagicMock()
-        client.table.return_value.upsert.return_value.execute.side_effect = Exception("fail")
+        client.table.return_value.upsert.return_value.execute.side_effect = Exception(
+            "fail"
+        )
 
         records = [{"season": "2024-25", "fpl_id": 1, "name": "A"}]
         result = safe_upsert(client, "table", records, ["season", "fpl_id"])
@@ -203,7 +218,10 @@ class TestSafeUpsert:
             {"season": "2024-25", "fpl_id": 1, "data_quality_score": 0.9},
         ]
         result = safe_upsert(
-            client, "table", records, ["season", "fpl_id"],
+            client,
+            "table",
+            records,
+            ["season", "fpl_id"],
             score_column="data_quality_score",
         )
         assert result == 1  # deduped to 1 record
@@ -218,7 +236,10 @@ class TestSafeUpsert:
             {"season": "2024-25", "fpl_id": 2, "name": "B"},  # new, upload
         ]
         result = safe_upsert(
-            client, "table", records, ["season", "fpl_id"],
+            client,
+            "table",
+            records,
+            ["season", "fpl_id"],
             skip_existing=True,
         )
         assert result == 1
