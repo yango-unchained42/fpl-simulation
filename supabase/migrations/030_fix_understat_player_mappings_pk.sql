@@ -1,5 +1,5 @@
 -- Migration 030: Fix bronze_understat_player_mappings primary key
--- The current PK only includes (player_id, season) but players can transfer 
+-- The current PK only includes (player_id, season) but players can transfer
 -- between teams within a season. Drop the PK and use a different approach.
 
 -- First, clear the table

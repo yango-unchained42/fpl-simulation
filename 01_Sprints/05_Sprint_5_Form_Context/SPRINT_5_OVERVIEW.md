@@ -18,8 +18,8 @@
 ## Tickets
 
 ### SPRINT5-001: Form Metrics Calculation
-**Status:** Awaiting Development  
-**Priority:** High  
+**Status:** Awaiting Development
+**Priority:** High
 **Labels:** `feature` `form` `metrics`
 
 **Description:**
@@ -34,15 +34,15 @@ Calculate rolling form metrics for players and teams over 7-day and 14-day windo
 - [ ] Handles edge cases (new players, players returning from injury)
 - [ ] Documentation updated
 
-**Assignee:** @Developer  
-**Status:** Awaiting Development  
+**Assignee:** @Developer
+**Status:** Awaiting Development
 **Comments:**
 
 ---
 
 ### SPRINT5-002: Fixture Difficulty & Team Strength
-**Status:** Awaiting Development  
-**Priority:** Medium  
+**Status:** Awaiting Development
+**Priority:** Medium
 **Labels:** `feature` `context` `difficulty`
 
 **Description:**
@@ -56,15 +56,15 @@ Calculate fixture difficulty ratings and opponent team strength metrics.
 - [ ] Features stored in Supabase
 - [ ] Documentation updated
 
-**Assignee:** @Developer  
-**Status:** Awaiting Development  
+**Assignee:** @Developer
+**Status:** Awaiting Development
 **Comments:**
 
 ---
 
 ### SPRINT5-003: Contextual Features (Rest, Fatigue, Injuries)
-**Status:** Awaiting Development  
-**Priority:** Medium  
+**Status:** Awaiting Development
+**Priority:** Medium
 **Labels:** `feature` `context` `injuries`
 
 **Description:**
@@ -80,15 +80,15 @@ Add contextual features for rest days, team fatigue, and injury/suspension impac
 - [ ] Features stored in Supabase
 - [ ] Documentation updated
 
-**Assignee:** @Developer  
-**Status:** Awaiting Development  
+**Assignee:** @Developer
+**Status:** Awaiting Development
 **Comments:**
 
 ---
 
 ### SPRINT5-004: Form & Context Testing
-**Status:** Awaiting Development  
-**Priority:** Medium  
+**Status:** Awaiting Development
+**Priority:** Medium
 **Labels:** `testing` `form` `context`
 
 **Description:**
@@ -103,15 +103,15 @@ Comprehensive testing for all form and context features.
 - [ ] Test coverage >80%
 - [ ] All tests passing
 
-**Assignee:** @TestSpecialist  
-**Status:** Awaiting Development  
+**Assignee:** @TestSpecialist
+**Status:** Awaiting Development
 **Comments:**
 
 ---
 
 ### SPRINT5-005: Form & Context Review
-**Status:** Awaiting Review  
-**Priority:** Medium  
+**Status:** Awaiting Review
+**Priority:** Medium
 **Labels:** `review` `form` `context`
 
 **Description:**
@@ -125,17 +125,17 @@ Project Owner review of form and context features implementation.
 - [ ] Performance benchmarks met
 - [ ] Approved for merge
 
-**Assignee:** @ProjectOwner  
-**Status:** Awaiting Review  
+**Assignee:** @ProjectOwner
+**Status:** Awaiting Review
 **Comments:**
 
 ---
 
 ## Sprint Summary
 
-**Total Tickets:** 5  
-**Development Tickets:** 3  
-**Testing Tickets:** 1  
+**Total Tickets:** 5
+**Development Tickets:** 3
+**Testing Tickets:** 1
 **Review Tickets:** 1
 
 **Expected Outcomes:**

@@ -114,7 +114,7 @@ CREATE TABLE IF NOT EXISTS silver_vaastav_players (
     -- Metadata
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     PRIMARY KEY (unified_player_id, season)
 );
 

@@ -5,35 +5,35 @@
 CREATE TABLE IF NOT EXISTS match_mapping (
     -- Unique ID for this match (across all sources)
     match_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    
+
     -- Season reference
     season TEXT NOT NULL,
-    
+
     -- Date (common between sources)
     match_date DATE NOT NULL,
-    
+
     -- FPL/vaastav fixture IDs
     fpl_fixture_id INTEGER,
     vaastav_fixture_id INTEGER,
-    
+
     -- Understat game ID
     understat_game_id INTEGER,
-    
+
     -- Teams (using FPL team IDs for consistency)
     home_team_id INTEGER,
     away_team_id INTEGER,
-    
+
     -- Team names (for matching across sources)
     home_team_name TEXT,
     away_team_name TEXT,
-    
+
     -- Scores (for reference)
     home_score INTEGER,
     away_score INTEGER,
-    
+
     -- Data quality
     match_source TEXT CHECK (match_source IN ('fpl', 'vaastav', 'understat', 'both')),
-    
+
     -- Metadata
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
     -- Removed UNIQUE constraints to allow many-to-many relationships
@@ -56,11 +56,11 @@ COMMENT ON COLUMN match_mapping.match_source IS 'Which source provided the match
 -- These will be populated by the daily job
 
 -- Add to silver_fpl_player_stats
-ALTER TABLE silver_fpl_player_stats 
+ALTER TABLE silver_fpl_player_stats
     ADD COLUMN IF NOT EXISTS unified_player_id UUID,
     ADD COLUMN IF NOT EXISTS match_id UUID;
 
--- Add to silver_understat_player_stats  
+-- Add to silver_understat_player_stats
 ALTER TABLE silver_understat_player_stats
     ADD COLUMN IF NOT EXISTS unified_player_id UUID,
     ADD COLUMN IF NOT EXISTS unified_team_id UUID,

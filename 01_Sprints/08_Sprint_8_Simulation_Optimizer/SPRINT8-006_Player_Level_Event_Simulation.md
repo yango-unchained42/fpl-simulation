@@ -4,7 +4,7 @@
 Enhance the existing prediction pipeline by integrating granular Understat shot-level data as features. Currently, Understat data is only used as aggregated metrics (total xG, xA, shots). This ticket will ingest detailed shot events (coordinates, body part, situation, xG value) and engineer advanced features to improve the LightGBM model's accuracy.
 
 ## Technical Requirements
-- **Ingest Granular Understat Data**: 
+- **Ingest Granular Understat Data**:
   - Extend `ingest_understat.py` to fetch and store shot-level data (coordinates, body part, situation, xG value)
   - Create `data/raw/understat/{season}/shots.parquet` with granular shot events
 - **Feature Engineering**:

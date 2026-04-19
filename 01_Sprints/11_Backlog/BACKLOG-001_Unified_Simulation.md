@@ -96,7 +96,7 @@ Currently we have two separate simulation approaches:
 # Target variables for ML model
 target_events = [
     "expected_goals",        # xG - shots conversion
-    "expected_assists",     # xA - key passes conversion  
+    "expected_assists",     # xA - key passes conversion
     "shots",                # shot frequency
     "key_passes",           # chance creation
     "tackles",              # defensive actions

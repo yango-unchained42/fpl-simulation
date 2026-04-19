@@ -49,7 +49,7 @@ Instead of merging all sources into one table (complex), we'll consolidate each 
 
 ### Data Sources Available (2026-04-09)
 - `bronze_fpl_gw` - 2025-26, 44 cols
-- `bronze_fpl_fixtures` - 2025-26, 19 cols  
+- `bronze_fpl_fixtures` - 2025-26, 19 cols
 - `bronze_fpl_players` - 2025-26, 107 cols
 - `bronze_fpl_teams` - 2025-26, 23 cols
 - `bronze_vaastav_player_history_gw` - 2021-22 to 2023-24, 41 cols

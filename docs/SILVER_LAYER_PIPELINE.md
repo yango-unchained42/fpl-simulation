@@ -142,5 +142,5 @@ matches = bronze_fpl_fixtures.join(
 ## Migration Status
 
 - [x] `silver_team_mapping` - populated for all seasons
-- [x] `silver_player_mapping` - populated for all seasons  
+- [x] `silver_player_mapping` - populated for all seasons
 - [ ] `silver_match_mapping` - needs creation/review

@@ -91,7 +91,7 @@ ignore_missing_imports = true
 warn_return_any = false
 warn_unused_configs = true
 check_untyped_defs = true
-disable_error_code = ["attr-defined", "no-untyped-call", "no-untyped-def", "type-arg", "no-any-return", "unused-ignore", "untyped-decorator", "misc", "arg-type"]
+disable_error_code = ["attr-defined", "no-untyped-call", "no-untyped-def", "type-arg", "no-any-return", "unused-ignore", "misc", "arg-type"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

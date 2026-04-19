@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from supabase import create_client
+from supabase import create_client  # noqa: E402
 
 load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")
