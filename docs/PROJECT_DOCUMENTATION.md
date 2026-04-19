@@ -113,7 +113,7 @@ model = train_points_predictor(
     model_path="data/models/points_predictor.joblib"
 )
 
-# Example: XI Probability Model  
+# Example: XI Probability Model
 from src.models.starting_xi import train_xi_model
 
 xi_model = train_xi_model(

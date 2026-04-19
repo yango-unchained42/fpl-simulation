@@ -10,13 +10,13 @@ CREATE TABLE IF NOT EXISTS silver_unified_player_stats (
     player_id INTEGER NOT NULL,
     season TEXT NOT NULL,
     gameweek INTEGER NOT NULL,
-    
+
     -- Team/Position context
     team_id INTEGER,
     position TEXT,
     position_id INTEGER,
     game_id INTEGER,
-    
+
     -- Core match stats (from FPL - official stats)
     total_points INTEGER,
     goals_scored INTEGER,
@@ -24,50 +24,50 @@ CREATE TABLE IF NOT EXISTS silver_unified_player_stats (
     clean_sheets INTEGER,
     goals_conceded INTEGER,
     starts INTEGER,
-    
+
     -- Minutes (from Understat - more accurate for subs)
     minutes INTEGER,
-    
+
     -- Expected stats (from Understat - superior methodology)
     xg REAL,
     xa REAL,
     xg_chain REAL,
     xg_buildup REAL,
-    
+
     -- FPL expected stats (fallback/backup)
     expected_goals REAL,
     expected_assists REAL,
     expected_goal_involvements REAL,
     expected_goals_conceded REAL,
-    
+
     -- Shot/Creative stats (from Understat)
     shots INTEGER,
     key_passes INTEGER,
-    
+
     -- Discipline (from FPL - official data)
     yellow_cards INTEGER,
     red_cards INTEGER,
     own_goals INTEGER,
     penalties_saved INTEGER,
     penalties_missed INTEGER,
-    
+
     -- Bonus/BPS (FPL-only)
     bonus INTEGER,
     bps INTEGER,
-    
+
     -- ICT Index (FPL-only)
     influence REAL,
     creativity REAL,
     threat REAL,
     ict_index REAL,
-    
+
     -- Defensive stats (FPL-only)
     tackles INTEGER,
     clearances_blocks_interceptions INTEGER,
     recoveries INTEGER,
     defensive_contribution REAL,
     saves INTEGER,
-    
+
     -- Match context (IDs only - NO names!)
     was_home BOOLEAN,
     opponent_team_id INTEGER,
@@ -75,16 +75,16 @@ CREATE TABLE IF NOT EXISTS silver_unified_player_stats (
     kickoff_time TEXT,
     home_score INTEGER,
     away_score INTEGER,
-    
+
     -- Data quality flags
     data_quality_score REAL DEFAULT 1.0,
     is_incomplete BOOLEAN DEFAULT FALSE,
     missing_fields TEXT[],
-    
+
     -- Metadata
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     PRIMARY KEY (player_id, season, gameweek)
 );
 

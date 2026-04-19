@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS silver_gw (
     gameweek INTEGER NOT NULL,
     season TEXT NOT NULL,
     source TEXT NOT NULL,  -- 'fpl' or 'vaastav'
-    
+
     -- Core stats (common to both)
     total_points INTEGER,
     minutes INTEGER,
@@ -21,17 +21,17 @@ CREATE TABLE IF NOT EXISTS silver_gw (
     expected_assists REAL,
     expected_goal_involvements REAL,
     expected_goals_conceded REAL,
-    
+
     -- Bonus points
     bonus INTEGER,
     bps INTEGER,
-    
+
     -- ICT indices
     influence REAL,
     creativity REAL,
     threat REAL,
     ict_index REAL,
-    
+
     -- Other stats
     own_goals INTEGER,
     penalties_saved INTEGER,
@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS silver_gw (
     red_cards INTEGER,
     saves INTEGER,
     starts INTEGER,
-    
+
     -- Match context
     was_home BOOLEAN,
     opponent_team TEXT,
@@ -48,29 +48,29 @@ CREATE TABLE IF NOT EXISTS silver_gw (
     kickoff_time TEXT,
     team_a_score INTEGER,
     team_h_score INTEGER,
-    
+
     -- Ownership/transfer data
     value INTEGER,
     selected INTEGER,
     transfers_in INTEGER,
     transfers_out INTEGER,
-    
+
     -- FPL-only extra stats (NULL for vaastav)
     clearances_blocks_interceptions INTEGER,
     recoveries INTEGER,
     tackles INTEGER,
     defensive_contribution REAL,
     transfers_balance INTEGER,
-    
+
     -- Data quality flags
     data_quality_score REAL DEFAULT 1.0,
     is_incomplete BOOLEAN DEFAULT FALSE,
     missing_fields TEXT[],
-    
+
     -- Metadata
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     PRIMARY KEY (player_id, gameweek, season, source)
 );
 

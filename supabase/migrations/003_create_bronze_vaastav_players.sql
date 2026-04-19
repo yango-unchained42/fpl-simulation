@@ -107,7 +107,7 @@ CREATE TABLE IF NOT EXISTS bronze_vaastav_players (
     saves_per_90 TEXT,
     season TEXT NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     PRIMARY KEY (id, season)
 );
 
