@@ -82,6 +82,6 @@ def get_supabase():
             "Missing SUPABASE_URL or SUPABASE_KEY. "
             "Set them in .env or as environment variables."
         )
-    from supabase import create_client
+    from supabase import create_client  # type: ignore[attr-defined]
 
     return create_client(SUPABASE_URL, SUPABASE_KEY)

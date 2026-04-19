@@ -43,6 +43,7 @@ See Also:
 
 from __future__ import annotations
 
+from collections.abc import Generator
 from typing import Any
 
 # Default batch size to avoid hitting PostgREST limit
@@ -151,7 +152,7 @@ def iter_paginated(
     select_cols: str = "*",
     filters: dict[str, Any] | None = None,
     batch_size: int = DEFAULT_BATCH_SIZE,
-) -> list[list[dict[str, Any]]]:
+) -> Generator[list[dict[str, Any]], None, None]:
     """Yield records in batches for memory-efficient processing.
 
     Use this when you need to process records in chunks without
