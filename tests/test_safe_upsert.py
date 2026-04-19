@@ -77,7 +77,13 @@ class TestDeduplicateByKey:
 class TestCleanRecordsForUpload:
     def test_removes_default_columns(self):
         records = [
-            {"name": "Test", "created_at": "2024-01-01", "updated_at": "2024-01-02", "id": 123, "value": 10},
+            {
+                "name": "Test",
+                "created_at": "2024-01-01",
+                "updated_at": "2024-01-02",
+                "id": 123,
+                "value": 10,
+            },
         ]
         result = clean_records_for_upload(records)
         assert len(result) == 1
@@ -116,7 +122,9 @@ class TestTruncateTable:
         mock_client = MagicMock()
         mock_result = MagicMock()
         mock_result.data = [{"season": "2024-25", "id": 1, "name": "Test"}]
-        mock_client.table.return_value.select.return_value.limit.return_value.execute.return_value = mock_result
+        mock_client.table.return_value.select.return_value.limit.return_value.execute.return_value = (
+            mock_result
+        )
 
         # Mock the delete chain
         mock_delete = MagicMock()
@@ -135,7 +143,9 @@ class TestTruncateTable:
         mock_client = MagicMock()
         mock_result = MagicMock()
         mock_result.data = []
-        mock_client.table.return_value.select.return_value.limit.return_value.execute.return_value = mock_result
+        mock_client.table.return_value.select.return_value.limit.return_value.execute.return_value = (
+            mock_result
+        )
 
         truncate_table(mock_client, "empty_table")
 
@@ -148,7 +158,9 @@ class TestTruncateTable:
         mock_client = MagicMock()
         mock_probe_result = MagicMock()
         mock_probe_result.data = [{"col": "val"}]
-        mock_client.table.return_value.select.return_value.limit.return_value.execute.return_value = mock_probe_result
+        mock_client.table.return_value.select.return_value.limit.return_value.execute.return_value = (
+            mock_probe_result
+        )
         # Make delete raise an error
         mock_client.table.return_value.delete.side_effect = Exception("Table not found")
         mock_getenv.return_value = "fake-token"
@@ -171,22 +183,24 @@ class TestSafeUpsert:
 
     def test_basic_upsert(self):
         mock_client = MagicMock()
-        mock_client.table.return_value.upsert.return_value.execute.return_value = MagicMock()
+        mock_client.table.return_value.upsert.return_value.execute.return_value = (
+            MagicMock()
+        )
 
         records = [
             {"season": "2024-25", "id": 1, "value": 10},
             {"season": "2024-25", "id": 2, "value": 20},
         ]
-        result = safe_upsert(
-            mock_client, "test_table", records, ["season", "id"]
-        )
+        result = safe_upsert(mock_client, "test_table", records, ["season", "id"])
 
         assert result == 2
         mock_client.table.return_value.upsert.assert_called_once()
 
     def test_deduplicates_before_upsert(self):
         mock_client = MagicMock()
-        mock_client.table.return_value.upsert.return_value.execute.return_value = MagicMock()
+        mock_client.table.return_value.upsert.return_value.execute.return_value = (
+            MagicMock()
+        )
 
         records = [
             {"season": "2024-25", "id": 1, "score": 0.5},
@@ -209,14 +223,12 @@ class TestSafeUpsert:
     @patch("src.utils.safe_upsert.BATCH_SIZE", 2)
     def test_batching(self):
         mock_client = MagicMock()
-        mock_client.table.return_value.upsert.return_value.execute.return_value = MagicMock()
-
-        records = [
-            {"season": "2024-25", "id": i, "value": i} for i in range(5)
-        ]
-        result = safe_upsert(
-            mock_client, "test_table", records, ["season", "id"]
+        mock_client.table.return_value.upsert.return_value.execute.return_value = (
+            MagicMock()
         )
+
+        records = [{"season": "2024-25", "id": i, "value": i} for i in range(5)]
+        result = safe_upsert(mock_client, "test_table", records, ["season", "id"])
 
         assert result == 5
         assert mock_client.table.return_value.upsert.call_count == 3  # ceil(5/2)
@@ -244,9 +256,7 @@ class TestSafeUpsert:
             {"season": "2024-25", "id": 4, "value": 4},
         ]
         with caplog.at_level(logging.ERROR):
-            result = safe_upsert(
-                mock_client, "test_table", records, ["season", "id"]
-            )
+            result = safe_upsert(mock_client, "test_table", records, ["season", "id"])
 
         # First batch (2 records) fails, second batch (2 records) succeeds
         assert result == 2
@@ -260,7 +270,9 @@ class TestSafeUpsert:
             mock_fetch.return_value = [
                 {"season": "2024-25", "id": 1},
             ]
-            mock_client.table.return_value.upsert.return_value.execute.return_value = MagicMock()
+            mock_client.table.return_value.upsert.return_value.execute.return_value = (
+                MagicMock()
+            )
 
             records = [
                 {"season": "2024-25", "id": 1, "value": 10},  # existing

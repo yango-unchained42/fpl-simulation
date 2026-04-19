@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Check what's actually in match_mapping"""
+
 import os
 from collections import Counter  # noqa: E402
 
