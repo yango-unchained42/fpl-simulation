@@ -65,21 +65,21 @@ CREATE TABLE match_mapping (
     match_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     season TEXT NOT NULL,
     game_date DATE NOT NULL,
-    
+
     -- FPL/vaastav fixtures
     fpl_fixture_id INTEGER,
     vaastav_fixture_id INTEGER,
-    
+
     -- Understat game
     understat_game_id INTEGER,
-    
+
     -- Teams (FPL IDs)
     home_team_id INTEGER,
     away_team_id INTEGER,
-    
+
     -- Metadata
     created_at TIMESTAMP DEFAULT NOW(),
-    
+
     UNIQUE(season, fpl_fixture_id),
     UNIQUE(season, vaastav_fixture_id),
     UNIQUE(season, understat_game_id)
@@ -97,13 +97,13 @@ CREATE TABLE match_mapping (
 # Step a: Get all FPL fixtures
 fpl_fixtures = get_all("silver_fixtures")  # has kickoff_time, team_h, team_a
 
-# Step b: Get all Understat matches  
+# Step b: Get all Understat matches
 understat_matches = get_all("silver_understat_match_stats")  # has date, home_team_id, away_team_id
 
 # Step c: Match by (date, home_team, away_team)
 for fpl_fix in fpl_fixtures:
     for us_match in understat_matches:
-        if (fpl_fix.date == us_match.date 
+        if (fpl_fix.date == us_match.date
             and fpl_fix.team_h == us_match.home_team_id
             and fpl_fix.team_a == us_match.away_team_id):
             # Create unified match_id
@@ -115,7 +115,7 @@ for fpl_fix in fpl_fixtures:
 
 Add columns:
 - `unified_player_id` (from player_mapping)
-- `unified_team_id` (from team_mapping)  
+- `unified_team_id` (from team_mapping)
 - `match_id` (from match_mapping)
 
 ```python
@@ -125,10 +125,10 @@ def add_unified_ids_to_fpl():
         season = rec.season
         player_id = rec.player_id
         rec.unified_player_id = player_mapping[(season, player_id)]
-        
+
         # Get match_id from fixture
         rec.match_id = match_mapping[(season, rec.fixture)]
-        
+
         # Get team - need to derive from fixture (team_h or team_a)
         # Use (was_home, opponent_team) to find player's team
 ```
@@ -147,10 +147,10 @@ def add_unified_ids_to_understat():
         season = rec.season
         us_player_id = rec.player_id
         rec.unified_player_id = player_mapping[(season, us_player_id)]
-        
+
         # Get match_id
         rec.match_id = match_mapping[(season, rec.game_id)]
-        
+
         # Get unified_team_id
         rec.unified_team_id = team_mapping[(season, rec.team_id)]
 ```
@@ -162,13 +162,13 @@ def merge_unified():
     # Load both tables
     fpl_data = get("silver_fpl_player_stats")      # has unified_player_id, match_id
     understat_data = get("silver_understat_player_stats")  # has unified_player_id, match_id
-    
+
     # Simple join!
     merged = {}
     for fpl in fpl_data:
         key = (fpl.unified_player_id, fpl.match_id)
         merged[key] = fpl
-    
+
     for us in understat_data:
         key = (us.unified_player_id, us.match_id)
         if key in merged:
@@ -180,7 +180,7 @@ def merge_unified():
         else:
             # Understat-only record
             merged[key] = us
-    
+
     # Upload to silver_unified_player_stats
     upload(merged)
 ```
@@ -197,7 +197,7 @@ def get_unified_player_id(season, fpl_id=None, vaastav_id=None, understat_id=Non
     if fpl_id:
         return player_map[(season, fpl_id)]  # from player_mapping
     if vaastav_id:
-        return player_map[(season, vaastav_id)]  
+        return player_map[(season, vaastav_id)]
     if understat_id:
         return player_map[(season, understat_id)]
     return None
@@ -220,7 +220,7 @@ def get_unified_player_id(season, fpl_id=None, vaastav_id=None, understat_id=Non
 1. ✅ Create match_mapping table (migration)
 2. ✅ Populate match_mapping (from fixtures + Understat)
 3. 🔲 Add unified columns to silver_fpl_player_stats
-4. 🔲 Add unified columns to silver_understat_player_stats  
+4. 🔲 Add unified columns to silver_understat_player_stats
 5. 🔲 Update daily_silver_update.py with simple join
 6. 🔲 Test and verify
 

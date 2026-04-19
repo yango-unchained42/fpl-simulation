@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS silver_vaastav_players_metadata (
     element_type INTEGER,
     season TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     PRIMARY KEY (id, season)
 );
 
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS silver_player_state (
     transfers_out INTEGER,
     -- Metadata
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     PRIMARY KEY (id, season, gameweek)
 );
 
