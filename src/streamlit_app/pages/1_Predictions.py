@@ -67,9 +67,11 @@ else:
     with col2:
         st.metric(
             "Avg Expected Points",
-            f"{sorted_df['expected_points'].mean():.2f}"
-            if "expected_points" in sorted_df.columns
-            else "N/A",
+            (
+                f"{sorted_df['expected_points'].mean():.2f}"
+                if "expected_points" in sorted_df.columns
+                else "N/A"
+            ),
         )
     with col3:
         st.metric("Gameweek", gameweek)

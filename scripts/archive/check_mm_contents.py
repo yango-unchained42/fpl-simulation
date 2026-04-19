@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Check what's in match_mapping."""
 
-from dotenv import load_dotenv
 import os
-from supabase import create_client
 from collections import Counter
+
+from dotenv import load_dotenv
+from supabase import create_client
 
 load_dotenv()
 client = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))

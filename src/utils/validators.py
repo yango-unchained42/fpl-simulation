@@ -29,7 +29,9 @@ def validate_player_ids(df: pl.DataFrame, valid_ids: set[int]) -> pl.DataFrame:
     return df.filter(pl.col("player_id").is_in(list(valid_ids)))
 
 
-def validate_gameweek_range(df: pl.DataFrame, min_gw: int = 1, max_gw: int = 38) -> pl.DataFrame:
+def validate_gameweek_range(
+    df: pl.DataFrame, min_gw: int = 1, max_gw: int = 38
+) -> pl.DataFrame:
     """Validate and filter gameweek values.
 
     Args:
@@ -43,9 +45,7 @@ def validate_gameweek_range(df: pl.DataFrame, min_gw: int = 1, max_gw: int = 38)
     if "gameweek" not in df.columns:
         logger.warning("No gameweek column found")
         return df
-    return df.filter(
-        (pl.col("gameweek") >= min_gw) & (pl.col("gameweek") <= max_gw)
-    )
+    return df.filter((pl.col("gameweek") >= min_gw) & (pl.col("gameweek") <= max_gw))
 
 
 def check_data_completeness(
