@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Debug date格式 mismatches."""
 
-from dotenv import load_dotenv
 import os
+
+from dotenv import load_dotenv
 from supabase import create_client
-from collections import defaultdict
 
 load_dotenv()
 client = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
@@ -49,7 +49,7 @@ print(f"\nExact overlap ({len(overlap)}):")
 print(f"  {sorted(overlap)[:10]}")
 
 # Check format
-print(f"\n=== Date format check ===")
+print("\n=== Date format check ===")
 sample_fpl = list(fpl_dates)[0] if fpl_dates else ""
 sample_us = list(us_dates)[0] if us_dates else ""
 print(f"FPL sample: '{sample_fpl}' (type: {type(sample_fpl)})")

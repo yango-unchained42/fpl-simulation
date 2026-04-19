@@ -3,9 +3,8 @@
 from __future__ import annotations
 
 import polars as pl
-import pytest
+
 from src.data.team_mappings import (
-    append_mappings,
     create_fpl_mappings,
     create_understat_mappings,
     create_vaastav_mappings,

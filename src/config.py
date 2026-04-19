@@ -38,9 +38,7 @@ ALL_SEASONS: list[str] = [
 ]
 
 # ── FPL API ─────────────────────────────────────────────────────────────────
-FPL_API_BASE: str = os.getenv(
-    "FPL_API_BASE", "https://fantasy.premierleague.com/api/"
-)
+FPL_API_BASE: str = os.getenv("FPL_API_BASE", "https://fantasy.premierleague.com/api/")
 
 # ── Supabase ────────────────────────────────────────────────────────────────
 SUPABASE_URL: str = os.getenv("SUPABASE_URL", "")
