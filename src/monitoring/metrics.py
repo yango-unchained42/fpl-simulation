@@ -213,7 +213,7 @@ def format_metrics_report(metrics: dict[str, Any]) -> str:
 
     # Mapping quality
     mq = metrics["mapping_quality"]
-    lines.append(f"\n🔗 Player Mapping Quality:")
+    lines.append("\n🔗 Player Mapping Quality:")
     if "totals" in mq:
         t = mq["totals"]
         lines.append(f"  Total mappings:     {t['total']:>8,}")
@@ -225,7 +225,7 @@ def format_metrics_report(metrics: dict[str, Any]) -> str:
 
     # By season
     if "by_season" in mq:
-        lines.append(f"\n  By season:")
+        lines.append("\n  By season:")
         lines.append(f"  {'Season':<10} {'FPL':>6} {'US Map':>7} {'US%':>7} {'VA':>6} {'US Map':>7} {'US%':>7}")
         for s in sorted(mq["by_season"].keys()):
             d = mq["by_season"][s]
@@ -236,7 +236,7 @@ def format_metrics_report(metrics: dict[str, Any]) -> str:
             )
 
     # Duplicates
-    lines.append(f"\n⚠️  Duplicates:")
+    lines.append("\n⚠️  Duplicates:")
     for table, count in metrics["duplicates"].items():
         status = "❌" if count > 0 else "✅"
         lines.append(f"  {status} {table}: {count}")
