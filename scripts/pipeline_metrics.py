@@ -10,9 +10,7 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
 
-from src.config import CURRENT_SEASON
 from src.monitoring.metrics import collect_all_metrics, format_metrics_report
 
 

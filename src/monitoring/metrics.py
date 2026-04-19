@@ -3,7 +3,6 @@
 Calculates data quality metrics for all silver tables:
 - Row counts per table per season
 - Mapping rates (FPL↔Understat, Vaastav↔Understat)
-- Data freshness (last update timestamps)
 - Duplicate detection
 """
 
@@ -13,7 +12,7 @@ import logging
 from datetime import datetime
 from typing import Any
 
-from src.config import ALL_SEASONS, get_supabase
+from src.config import get_supabase
 from src.utils.supabase_utils import fetch_all_paginated
 
 logger = logging.getLogger(__name__)
@@ -66,6 +65,7 @@ def get_mapping_quality(season: str | None = None) -> dict[str, Any]:
     all_mappings = fetch_all_paginated(
         client, "silver_player_mapping",
         select_cols="season,fpl_id,vaastav_id,understat_id,confidence_score",
+        filters=filters,
     )
 
     if not all_mappings:
@@ -175,7 +175,7 @@ def collect_all_metrics(season: str | None = None) -> dict[str, Any]:
     Returns:
         Complete metrics dict.
     """
-    logger.info(f"Collecting pipeline metrics{'for ' + season if season else ''}...")
+    logger.info(f"Collecting pipeline metrics{' for ' + season if season else ''}...")
 
     return {
         "collected_at": datetime.now().isoformat(),
