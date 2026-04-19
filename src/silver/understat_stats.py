@@ -42,7 +42,6 @@ def _load_match_lookup_by_understat(client: Any) -> dict[tuple[str, int], str]:
     return lookup
 
 
-
 def update_understat_player_stats(client: Any, season: str = CURRENT_SEASON) -> bool:
     """Update silver_understat_player_stats from bronze with UUID resolution."""
     logger.info("  Updating Understat player stats...")

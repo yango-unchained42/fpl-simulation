@@ -768,16 +768,16 @@ def build_all_season_mappings() -> pl.DataFrame:
                 team_lookup[("fpl", season, str(r["fpl_team_id"]))] = unified_id
             # Understat team ID (numeric) - CRITICAL for matching Understat players
             if r.get("understat_team_id"):
-                team_lookup[("understat", season, str(r["understat_team_id"]))] = (
-                    unified_id
-                )
+                team_lookup[
+                    ("understat", season, str(r["understat_team_id"]))
+                ] = unified_id
                 # Add understat_team_id to FPL lookup for team-based matching
                 team_lookup[("fpl", season, str(r["understat_team_id"]))] = unified_id
             # Understat team names (string)
             if r.get("understat_team_name"):
-                team_lookup[("understat", season, r["understat_team_name"])] = (
-                    unified_id
-                )
+                team_lookup[
+                    ("understat", season, r["understat_team_name"])
+                ] = unified_id
                 # Also add understat names to FPL lookup since player data is normalized to understat format
                 team_lookup[("fpl", season, r["understat_team_name"])] = unified_id
 

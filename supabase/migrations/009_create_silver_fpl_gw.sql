@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS silver_fpl_gw (
     -- Metadata
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     PRIMARY KEY (element, round, season)
 );
 
