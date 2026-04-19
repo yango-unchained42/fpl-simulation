@@ -1,15 +1,7 @@
 #!/usr/bin/env python3
 """Check what's actually in match_mapping"""
-
 import os
-<<<<<<< HEAD
-from collections import Counter
-=======
 from collections import Counter  # noqa: E402
-
-from dotenv import load_dotenv
-from supabase import create_client
->>>>>>> origin/main
 
 from dotenv import load_dotenv
 from supabase import create_client

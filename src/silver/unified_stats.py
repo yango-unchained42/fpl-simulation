@@ -10,41 +10,11 @@ import logging
 from typing import Any
 
 from src.config import BATCH_SIZE, CURRENT_SEASON
-<<<<<<< HEAD
 from src.utils.safe_upsert import truncate_table
-=======
->>>>>>> origin/main
 
 logger = logging.getLogger(__name__)
 
 
-<<<<<<< HEAD
-=======
-def _truncate_table(client: Any, table_name: str) -> None:
-    """Truncate a Silver table before reload."""
-    import os
-    import subprocess
-
-    token = os.getenv("SUPABASE_ACCESS_TOKEN")
-    if not token:
-        return
-
-    try:
-        result = subprocess.run(
-            ["supabase", "db", "query", "--linked", f"TRUNCATE {table_name} CASCADE;"],
-            capture_output=True,
-            text=True,
-            env={**os.environ, "SUPABASE_ACCESS_TOKEN": token},
-        )
-        if result.returncode != 0:
-            logger.warning(f"  Truncate failed for {table_name}: {result.stderr}")
-    except FileNotFoundError:
-        logger.debug(
-            f"  supabase CLI not available — skipping truncate for {table_name}"
-        )
-
-
->>>>>>> origin/main
 # Understat columns to pull into unified stats
 UNDERSTAT_COLS = [
     "xg",
