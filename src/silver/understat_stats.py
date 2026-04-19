@@ -9,7 +9,6 @@ import logging
 from typing import Any
 
 from src.config import BATCH_SIZE, CURRENT_SEASON
-from src.utils.data_cleaning import clean_and_flag_record
 from src.utils.supabase_utils import fetch_all_paginated
 
 logger = logging.getLogger(__name__)
@@ -19,7 +18,9 @@ def _load_player_lookup(client: Any) -> dict[tuple[str, int], str]:
     """Load season+understat_id → unified_player_id mapping."""
     lookup: dict[tuple[str, int], str] = {}
     for r in fetch_all_paginated(
-        client, "silver_player_mapping", select_cols="season,understat_id,unified_player_id"
+        client,
+        "silver_player_mapping",
+        select_cols="season,understat_id,unified_player_id",
     ):
         season = r.get("season")
         uid = r.get("unified_player_id")
@@ -59,12 +60,12 @@ def _truncate_table(client: Any, table_name: str) -> None:
         if result.returncode != 0:
             logger.warning(f"  Truncate failed for {table_name}: {result.stderr}")
     except FileNotFoundError:
-        logger.debug(f"  supabase CLI not available — skipping truncate for {table_name}")
+        logger.debug(
+            f"  supabase CLI not available — skipping truncate for {table_name}"
+        )
 
 
-def update_understat_player_stats(
-    client: Any, season: str = CURRENT_SEASON
-) -> bool:
+def update_understat_player_stats(client: Any, season: str = CURRENT_SEASON) -> bool:
     """Update silver_understat_player_stats from bronze with UUID resolution."""
     logger.info("  Updating Understat player stats...")
 
@@ -131,9 +132,7 @@ def update_understat_player_stats(
     return True
 
 
-def update_understat_match_stats(
-    client: Any, season: str = CURRENT_SEASON
-) -> bool:
+def update_understat_match_stats(client: Any, season: str = CURRENT_SEASON) -> bool:
     """Update silver_understat_match_stats from bronze with UUID resolution."""
     logger.info("  Updating Understat match stats...")
 
@@ -142,11 +141,14 @@ def update_understat_match_stats(
     # Load team mapping for UUID resolution
     team_lookup: dict[tuple[str, str], str] = {}
     for r in fetch_all_paginated(
-        client, "silver_team_mapping",
+        client,
+        "silver_team_mapping",
         select_cols="season,understat_team_id,unified_team_id",
     ):
         if r.get("season") and r.get("understat_team_id") and r.get("unified_team_id"):
-            team_lookup[(r["season"], str(r["understat_team_id"]))] = r["unified_team_id"]
+            team_lookup[(r["season"], str(r["understat_team_id"]))] = r[
+                "unified_team_id"
+            ]
 
     _truncate_table(client, "silver_understat_match_stats")
 

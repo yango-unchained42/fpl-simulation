@@ -44,10 +44,18 @@ def main() -> None:
         help=f"Season to process (default: {CURRENT_SEASON})",
     )
     parser.add_argument("--skip-fpl", action="store_true", help="Skip FPL data updates")
-    parser.add_argument("--skip-understat", action="store_true", help="Skip Understat updates")
-    parser.add_argument("--skip-fixtures", action="store_true", help="Skip fixtures updates")
-    parser.add_argument("--skip-match-mapping", action="store_true", help="Skip match mapping")
-    parser.add_argument("--skip-team-mapping", action="store_true", help="Skip team mapping")
+    parser.add_argument(
+        "--skip-understat", action="store_true", help="Skip Understat updates"
+    )
+    parser.add_argument(
+        "--skip-fixtures", action="store_true", help="Skip fixtures updates"
+    )
+    parser.add_argument(
+        "--skip-match-mapping", action="store_true", help="Skip match mapping"
+    )
+    parser.add_argument(
+        "--skip-team-mapping", action="store_true", help="Skip team mapping"
+    )
     args = parser.parse_args()
 
     load_dotenv()
@@ -78,7 +86,9 @@ def main() -> None:
         if not mappings.is_empty():
             records = mappings.to_dicts()
             for i in range(0, len(records), 500):
-                client.table("silver_player_mapping").upsert(records[i : i + 500]).execute()
+                client.table("silver_player_mapping").upsert(
+                    records[i : i + 500]
+                ).execute()
             logger.info(f"  ✓ Player mappings updated ({mappings.height} entries)")
         else:
             logger.warning("  ⚠ No player mappings generated")
@@ -98,7 +108,10 @@ def main() -> None:
     # Step 3: FPL data
     if not args.skip_fpl:
         logger.info("[4/7] FPL stats")
-        from src.silver.fpl_stats import update_fpl_fantasy_stats, update_fpl_player_stats
+        from src.silver.fpl_stats import (
+            update_fpl_fantasy_stats,
+            update_fpl_player_stats,
+        )
 
         if update_fpl_player_stats(client, season):
             updated = True

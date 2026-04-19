@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Drop and recreate match_mapping without constraints."""
 
-from dotenv import load_dotenv
 import os
-from supabase import create_client
+
+from dotenv import load_dotenv
 
 load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")
@@ -15,7 +15,7 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 print("Creating new table without constraints...")
 
 # Check CLI availability
-import subprocess
+import subprocess  # noqa: E402
 
 result = subprocess.run(["which", "psql"], capture_output=True, text=True)
 if result.returncode == 0:

@@ -2,7 +2,7 @@
 """Directly fix the match_mapping table by dropping and recreating."""
 
 import os
-import psycopg2
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -25,7 +25,7 @@ def get_connection_string() -> str:
     # from Supabase settings -> Connection String
     # Format: postgresql://postgres:[password]@db.[project-ref].supabase.co:5432/postgres
 
-    project_ref = url.replace("https://", "").split(".")[0]
+    _project_ref = url.replace("https://", "").split(".")[0]
 
     # We need the actual password - but let's check if there's an easier way
     # Actually, let's try using requests directly!
@@ -37,7 +37,7 @@ def fix_via_api():
     import requests
 
     url = os.getenv("SUPABASE_URL", "")
-    key = os.getenv("SUPABASE_KEY", "")
+    _key = os.getenv("SUPABASE_KEY", "")
 
     # For Supabase, we need to enable the SQL editor extension
     # Actually, let's use the pgweb approach - we can create a view workaround

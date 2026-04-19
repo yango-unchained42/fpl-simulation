@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Drop and recreate match_mapping table with new schema."""
 
-from dotenv import load_dotenv
 import os
+
+from dotenv import load_dotenv
 from supabase import create_client
 
 load_dotenv()
@@ -19,8 +20,8 @@ ids = [r.get("match_id") for r in result.data if r.get("match_id")]
 print(f"Found {len(ids)} existing rows - deleting in batches...")
 
 # Delete all rows using a filter that matches everything
-for i in range(0, len(ids), 1000:
-    batch = ids[i:i+1000]
+for i in range(0, len(ids), 1000):
+    batch = ids[i : i + 1000]
     # Can't filter by list, so we need another approach
     pass
 
