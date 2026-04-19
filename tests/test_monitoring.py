@@ -3,9 +3,7 @@
 from __future__ import annotations
 
 import importlib
-import sys
 from unittest.mock import MagicMock, patch
-
 
 MOCK_MAPPINGS = [
     {
@@ -57,8 +55,10 @@ class TestGetMappingQuality:
 
     def test_returns_mapping_rates(self):
         mod = _import_metrics()
-        with patch.object(mod, "fetch_all_paginated", return_value=MOCK_MAPPINGS), \
-             patch.object(mod, "get_supabase"):
+        with (
+            patch.object(mod, "fetch_all_paginated", return_value=MOCK_MAPPINGS),
+            patch.object(mod, "get_supabase"),
+        ):
             result = mod.get_mapping_quality()
 
         assert result["totals"]["total"] == 4
@@ -72,8 +72,10 @@ class TestGetMappingQuality:
 
     def test_by_season_breakdown(self):
         mod = _import_metrics()
-        with patch.object(mod, "fetch_all_paginated", return_value=MOCK_MAPPINGS), \
-             patch.object(mod, "get_supabase"):
+        with (
+            patch.object(mod, "fetch_all_paginated", return_value=MOCK_MAPPINGS),
+            patch.object(mod, "get_supabase"),
+        ):
             result = mod.get_mapping_quality()
 
         assert "2025-26" in result["by_season"]
@@ -86,8 +88,10 @@ class TestGetMappingQuality:
     def test_season_filter_passed(self):
         mod = _import_metrics()
         mock_fetch = MagicMock(return_value=MOCK_MAPPINGS)
-        with patch.object(mod, "fetch_all_paginated", mock_fetch), \
-             patch.object(mod, "get_supabase"):
+        with (
+            patch.object(mod, "fetch_all_paginated", mock_fetch),
+            patch.object(mod, "get_supabase"),
+        ):
             mod.get_mapping_quality(season="2025-26")
 
         mock_fetch.assert_called_once()
@@ -96,8 +100,10 @@ class TestGetMappingQuality:
 
     def test_empty_mappings(self):
         mod = _import_metrics()
-        with patch.object(mod, "fetch_all_paginated", return_value=[]), \
-             patch.object(mod, "get_supabase"):
+        with (
+            patch.object(mod, "fetch_all_paginated", return_value=[]),
+            patch.object(mod, "get_supabase"),
+        ):
             result = mod.get_mapping_quality()
 
         assert result == {"total": 0}
@@ -108,10 +114,16 @@ class TestCollectAllMetrics:
 
     def test_returns_all_sections(self):
         mod = _import_metrics()
-        with patch.object(mod, "get_duplicate_counts", return_value={"silver_player_mapping": 0}), \
-             patch.object(mod, "get_mapping_quality", return_value={"totals": {}}), \
-             patch.object(mod, "get_table_counts", return_value={"bronze_fpl_players": 100}), \
-             patch.object(mod, "get_supabase"):
+        with (
+            patch.object(
+                mod, "get_duplicate_counts", return_value={"silver_player_mapping": 0}
+            ),
+            patch.object(mod, "get_mapping_quality", return_value={"totals": {}}),
+            patch.object(
+                mod, "get_table_counts", return_value={"bronze_fpl_players": 100}
+            ),
+            patch.object(mod, "get_supabase"),
+        ):
             result = mod.collect_all_metrics()
 
         assert "collected_at" in result
@@ -123,10 +135,12 @@ class TestCollectAllMetrics:
 
     def test_season_passed_through(self):
         mod = _import_metrics()
-        with patch.object(mod, "get_duplicate_counts", return_value={}), \
-             patch.object(mod, "get_mapping_quality", return_value={}), \
-             patch.object(mod, "get_table_counts", return_value={}), \
-             patch.object(mod, "get_supabase"):
+        with (
+            patch.object(mod, "get_duplicate_counts", return_value={}),
+            patch.object(mod, "get_mapping_quality", return_value={}),
+            patch.object(mod, "get_table_counts", return_value={}),
+            patch.object(mod, "get_supabase"),
+        ):
             result = mod.collect_all_metrics(season="2025-26")
 
         assert result["season"] == "2025-26"
@@ -137,24 +151,32 @@ class TestGetDuplicateCounts:
 
     def test_detects_duplicates(self):
         mod = _import_metrics()
-        with patch.object(mod, "fetch_all_paginated", return_value=MOCK_DUP_MAPPINGS), \
-             patch.object(mod, "get_supabase"):
+        with (
+            patch.object(mod, "fetch_all_paginated", return_value=MOCK_DUP_MAPPINGS),
+            patch.object(mod, "get_supabase"),
+        ):
             result = mod.get_duplicate_counts()
 
         assert result["silver_player_mapping"] == 1
 
     def test_no_duplicates_when_empty(self):
         mod = _import_metrics()
-        with patch.object(mod, "fetch_all_paginated", return_value=[]), \
-             patch.object(mod, "get_supabase"):
+        with (
+            patch.object(mod, "fetch_all_paginated", return_value=[]),
+            patch.object(mod, "get_supabase"),
+        ):
             result = mod.get_duplicate_counts()
 
         assert result["silver_player_mapping"] == 0
 
     def test_handles_exception(self):
         mod = _import_metrics()
-        with patch.object(mod, "fetch_all_paginated", side_effect=Exception("table missing")), \
-             patch.object(mod, "get_supabase"):
+        with (
+            patch.object(
+                mod, "fetch_all_paginated", side_effect=Exception("table missing")
+            ),
+            patch.object(mod, "get_supabase"),
+        ):
             result = mod.get_duplicate_counts()
 
         assert result["silver_player_mapping"] == -1
