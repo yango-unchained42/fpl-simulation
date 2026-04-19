@@ -338,11 +338,11 @@ for match in upcoming_fixtures:
     # Team-level xG with home advantage
     home_xG = home_team_xG_for × home_advantage_factor
     away_xG = away_team_xG_for × away_disadvantage_factor
-    
+
     # Dixon-Coles adjusted Poisson
     home_goals ~ Poisson(home_xG)
     away_goals ~ Poisson(away_xG)
-    
+
     # Apply Dixon-Coles correction for low-scoring
     if (home_goals, away_goals) in [(0,0), (1,0), (0,1), (1,1)]:
         apply_dc_correction(home_goals, away_goals, home_xG, away_xG, ρ)
