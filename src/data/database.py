@@ -31,7 +31,9 @@ def get_supabase_client(
         Supabase Client instance, or None if dependencies missing.
     """
     try:
-        from supabase import create_client  # type: ignore[attr-defined]  # noqa: PLC0415
+        from supabase import (
+            create_client,  # type: ignore[attr-defined]  # noqa: PLC0415
+        )
     except ImportError:
         logger.warning("supabase package not installed")
         return None

@@ -140,7 +140,6 @@ def update_unified_player_stats(client: Any, season: str = CURRENT_SEASON) -> bo
             # Match context
             "was_home": fpl_rec.get("was_home"),
             "opponent_team_id": fpl_rec.get("opponent_team_id"),
-            "fixture_id": fpl_rec.get("fixture_id"),
             "kickoff_time": fpl_rec.get("kickoff_time"),
             "home_score": fpl_rec.get("home_score"),
             "away_score": fpl_rec.get("away_score"),
