@@ -8,7 +8,7 @@ import polars as pl
 import pytest
 
 from src.silver.player_mapping import (
-    HIGH_CONFIDENCE_THRESHOLD,
+    HIGH_CONFIDENCE,
     LOW_CONFIDENCE_THRESHOLD,
     build_season_mappings,
     match_players_with_team,
@@ -228,8 +228,8 @@ class TestConfidenceThresholds:
 
     def test_threshold_values(self):
         """Test that threshold values are sensible."""
-        assert HIGH_CONFIDENCE_THRESHOLD > LOW_CONFIDENCE_THRESHOLD
-        assert HIGH_CONFIDENCE_THRESHOLD <= 1.0
+        assert HIGH_CONFIDENCE > LOW_CONFIDENCE_THRESHOLD
+        assert HIGH_CONFIDENCE <= 1.0
         assert LOW_CONFIDENCE_THRESHOLD >= 0.0
 
 
