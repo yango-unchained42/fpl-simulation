@@ -84,12 +84,17 @@ def main() -> None:
 
         mappings = build_all_season_mappings()
         if not mappings.is_empty():
+            from src.utils.safe_upsert import safe_upsert
+
             records = mappings.to_dicts()
-            for i in range(0, len(records), 500):
-                client.table("silver_player_mapping").upsert(
-                    records[i : i + 500]
-                ).execute()
-            logger.info(f"  ✓ Player mappings updated ({mappings.height} entries)")
+            written = safe_upsert(
+                client,
+                "silver_player_mapping",
+                records,
+                key_columns=["season", "fpl_id"],
+                batch_size=500,
+            )
+            logger.info(f"  ✓ Player mappings updated ({written} written)")
         else:
             logger.warning("  ⚠ No player mappings generated")
     else:

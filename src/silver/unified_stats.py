@@ -97,8 +97,8 @@ def update_unified_player_stats(client: Any, season: str = CURRENT_SEASON) -> bo
     # Start with FPL data, enrich with Understat
     for key, fpl_rec in fpl_data.items():
         unified = {
-            "unified_player_id": key[0],
-            "match_id": key[1],
+            "player_id": key[0],
+            "fixture_id": key[1],
             "season": season,
             "gameweek": fpl_rec.get("gameweek"),
             "team_id": fpl_rec.get("team_id"),
@@ -170,8 +170,8 @@ def update_unified_player_stats(client: Any, season: str = CURRENT_SEASON) -> bo
             understat_only += 1
             unified_records.append(
                 {
-                    "unified_player_id": key[0],
-                    "match_id": key[1],
+                    "player_id": key[0],
+                    "fixture_id": key[1],
                     "season": season,
                     "gameweek": us_rec.get("gameweek"),
                     "minutes": us_rec.get("minutes"),

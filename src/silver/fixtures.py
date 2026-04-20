@@ -80,6 +80,7 @@ def update_fixtures(client: Any, season: str = CURRENT_SEASON) -> bool:
         match_id = match_lookup.get((season, fixture_id)) if fixture_id else None
 
         filtered = {
+            "id": fixture_id,
             "match_id": match_id,
             "season": season,
             "event": gw,
@@ -97,7 +98,7 @@ def update_fixtures(client: Any, season: str = CURRENT_SEASON) -> bool:
             "started": rec.get("started", False),
         }
 
-        # Remove None values so DB defaults (like BIGSERIAL id) are used
+        # Remove None values (let DB handle defaults for nullable columns)
         filtered = {k: v for k, v in filtered.items() if v is not None}
 
         if match_id:

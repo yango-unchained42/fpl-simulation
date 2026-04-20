@@ -636,6 +636,15 @@ def build_season_mappings(season: str) -> pl.DataFrame:
                 how="left",
             )
 
+            # Deduplicate: same understat_id mapped to multiple FPL players
+            if "understat_id" in result.columns:
+                has_ust = result.filter(pl.col("understat_id").is_not_null())
+                no_ust = result.filter(pl.col("understat_id").is_null())
+                if not has_ust.is_empty():
+                    has_ust = has_ust.sort("understat_confidence", descending=True)
+                    has_ust = has_ust.unique(subset=["understat_id"], keep="first")
+                    result = pl.concat([has_ust, no_ust])
+
         all_players.append(result)
 
     # Use Vaastav for historical seasons (if no FPL)
@@ -688,6 +697,16 @@ def build_season_mappings(season: str) -> pl.DataFrame:
                 on="vaastav_id",
                 how="left",
             )
+
+            # Deduplicate: same understat_id mapped to multiple vaastav players
+            # Keep only the highest-confidence match for each understat_id
+            if "understat_id" in result.columns:
+                has_ust = result.filter(pl.col("understat_id").is_not_null())
+                no_ust = result.filter(pl.col("understat_id").is_null())
+                if not has_ust.is_empty():
+                    has_ust = has_ust.sort("understat_confidence", descending=True)
+                    has_ust = has_ust.unique(subset=["understat_id"], keep="first")
+                    result = pl.concat([has_ust, no_ust])
 
         all_players.append(result)
 

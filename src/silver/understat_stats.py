@@ -150,7 +150,6 @@ def update_understat_match_stats(client: Any, season: str = CURRENT_SEASON) -> b
         away_id_str = str(rec.get("away_id", ""))
 
         filtered = {
-            "match_id": match_id,
             "season": season,
             "home_team_id": team_lookup.get((season, home_id_str)),
             "away_team_id": team_lookup.get((season, away_id_str)),
