@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any
 import polars as pl
 
 if TYPE_CHECKING:
-    from supabase import Client
+    from supabase import Client  # type: ignore[attr-defined]
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ def get_supabase_client(
         Supabase Client instance, or None if dependencies missing.
     """
     try:
-        from supabase import create_client  # noqa: PLC0415
+        from supabase import create_client  # type: ignore[attr-defined]  # noqa: PLC0415
     except ImportError:
         logger.warning("supabase package not installed")
         return None
