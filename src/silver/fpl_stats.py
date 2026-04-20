@@ -8,8 +8,9 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from src.config import BATCH_SIZE, CURRENT_SEASON
+from src.config import CURRENT_SEASON
 from src.utils.data_cleaning import clean_and_flag_record
+from src.utils.safe_upsert import safe_upsert, truncate_table
 from src.utils.supabase_utils import fetch_all_paginated
 
 logger = logging.getLogger(__name__)
@@ -40,35 +41,6 @@ def _load_match_lookup(client: Any) -> dict[tuple[str, int], str]:
         if r.get("season") and r.get("fpl_fixture_id") and r.get("match_id"):
             lookup[(r["season"], int(r["fpl_fixture_id"]))] = r["match_id"]
     return lookup
-
-
-def _truncate_table(client: Any, table_name: str) -> None:
-    """Truncate a Silver table before reload."""
-    import os
-    import subprocess
-
-    token = os.getenv("SUPABASE_ACCESS_TOKEN")
-    if not token:
-        logger.warning(
-            f"  No SUPABASE_ACCESS_TOKEN — skipping truncate for {table_name}"
-        )
-        return
-
-    try:
-        result = subprocess.run(
-            ["supabase", "db", "query", "--linked", f"TRUNCATE {table_name} CASCADE;"],
-            capture_output=True,
-            text=True,
-            env={**os.environ, "SUPABASE_ACCESS_TOKEN": token},
-        )
-        if result.returncode != 0:
-            logger.warning(f"  Truncate failed for {table_name}: {result.stderr}")
-    except FileNotFoundError:
-        logger.debug(
-            f"  supabase CLI not available — skipping truncate for {table_name}"
-        )
-    else:
-        logger.info(f"  Truncated {table_name}")
 
 
 # Columns for silver_fpl_fantasy_stats
@@ -112,7 +84,7 @@ def update_fpl_fantasy_stats(client: Any, season: str = CURRENT_SEASON) -> bool:
         f"    Loaded {len(player_lookup)} player, {len(match_lookup)} match lookups"
     )
 
-    _truncate_table(client, "silver_fpl_fantasy_stats")
+    truncate_table(client, "silver_fpl_fantasy_stats")
 
     # Fetch GW stats for gameweek context
     gw_result = (
@@ -151,12 +123,15 @@ def update_fpl_fantasy_stats(client: Any, season: str = CURRENT_SEASON) -> bool:
         filtered.pop("element", None)
         transformed.append(clean_and_flag_record(filtered, category="gw"))
 
-    for i in range(0, len(transformed), BATCH_SIZE):
-        client.table("silver_fpl_fantasy_stats").upsert(
-            transformed[i : i + BATCH_SIZE]
-        ).execute()
+    written = safe_upsert(
+        client,
+        "silver_fpl_fantasy_stats",
+        transformed,
+        business_key=["season", "unified_player_id", "gameweek"],
+        season=season,
+    )
 
-    logger.info(f"    Updated {len(transformed)} fantasy stats")
+    logger.info(f"    Updated {written} fantasy stats")
     return True
 
 
@@ -209,7 +184,7 @@ def update_fpl_player_stats(client: Any, season: str = CURRENT_SEASON) -> bool:
     player_lookup = _load_player_lookup(client)
     match_lookup = _load_match_lookup(client)
 
-    _truncate_table(client, "silver_fpl_player_stats")
+    truncate_table(client, "silver_fpl_player_stats")
 
     # Fetch all GW data
     all_gw = []
@@ -269,10 +244,13 @@ def update_fpl_player_stats(client: Any, season: str = CURRENT_SEASON) -> bool:
         filtered.pop("fixture", None)
         transformed.append(clean_and_flag_record(filtered, category="gw"))
 
-    for i in range(0, len(transformed), BATCH_SIZE):
-        client.table("silver_fpl_player_stats").upsert(
-            transformed[i : i + BATCH_SIZE]
-        ).execute()
+    written = safe_upsert(
+        client,
+        "silver_fpl_player_stats",
+        transformed,
+        business_key=["season", "unified_player_id", "match_id"],
+        season=season,
+    )
 
-    logger.info(f"    Updated {len(transformed)} player stats")
+    logger.info(f"    Updated {written} player stats")
     return True

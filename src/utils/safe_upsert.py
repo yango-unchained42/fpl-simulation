@@ -12,12 +12,52 @@ row with the highest data_quality_score (or latest updated_at).
 from __future__ import annotations
 
 import logging
+import os
+import subprocess
 from typing import Any
 
 from src.config import BATCH_SIZE
 from src.utils.supabase_utils import fetch_all_paginated
 
 logger = logging.getLogger(__name__)
+
+
+def truncate_table(client: Any, table_name: str) -> None:
+    """Truncate a Silver table before reload.
+
+    Tries REST API delete first (column-agnostic), falls back to supabase CLI.
+    Gracefully handles missing CLI.
+    """
+    try:
+        # Use a column-agnostic always-true filter: fetch one row to discover
+        # an available column, then delete where that column is not null.
+        probe = client.table(table_name).select("*").limit(1).execute()
+        if probe.data:
+            col = next(iter(probe.data[0]))
+            client.table(table_name).delete().not_.is_(col, "null").execute()
+        else:
+            # Table is already empty
+            pass
+        logger.info(f"  Cleared {table_name}")
+    except Exception as e:
+        logger.warning(f"  Could not clear {table_name}: {e}")
+        token = os.getenv("SUPABASE_ACCESS_TOKEN")
+        if token:
+            try:
+                subprocess.run(
+                    [
+                        "supabase",
+                        "db",
+                        "query",
+                        "--linked",
+                        f"TRUNCATE {table_name} CASCADE;",
+                    ],
+                    capture_output=True,
+                    text=True,
+                    env={**os.environ, "SUPABASE_ACCESS_TOKEN": token},
+                )
+            except FileNotFoundError:
+                logger.debug(f"  supabase CLI not available for {table_name}")
 
 
 def deduplicate_by_key(
@@ -41,7 +81,6 @@ def deduplicate_by_key(
     for rec in records:
         key = tuple(rec.get(col) for col in key_columns)
 
-        # Skip records with null keys
         if any(v is None for v in key):
             continue
 
@@ -53,48 +92,16 @@ def deduplicate_by_key(
             if new_score > existing_score:
                 seen[key] = rec
         else:
-            # Keep the last one
             seen[key] = rec
 
     deduped = list(seen.values())
     removed = len(records) - len(deduped)
     if removed > 0:
         logger.info(
-            f"    Deduped {len(records)} → {len(deduped)} records (removed {removed})"
+            f"    Deduped {len(records)} -> {len(deduped)} records (removed {removed})"
         )
 
     return deduped
-
-
-def load_existing_keys(
-    client: Any,
-    table: str,
-    key_columns: list[str],
-    season: str | None = None,
-) -> set[tuple]:
-    """Load existing business keys from a table.
-
-    Args:
-        client: Supabase client.
-        table: Table name.
-        key_columns: Columns that form the business key.
-        season: Optional season filter.
-
-    Returns:
-        Set of existing key tuples.
-    """
-    select_cols = ",".join(key_columns)
-    filters = {"season": season} if season else None
-
-    existing = fetch_all_paginated(
-        client, table, select_cols=select_cols, filters=filters
-    )
-    keys = set()
-    for rec in existing:
-        key = tuple(rec.get(col) for col in key_columns)
-        if all(v is not None for v in key):
-            keys.add(key)
-    return keys
 
 
 def safe_upsert(
@@ -128,12 +135,19 @@ def safe_upsert(
     if not records:
         return 0
 
-    # Step 1: Deduplicate input
     records = deduplicate_by_key(records, business_key, score_column)
 
-    # Step 2: Optionally skip existing
     if skip_existing:
-        existing_keys = load_existing_keys(client, table, business_key, season)
+        existing_keys = set()
+        select_cols = ",".join(business_key)
+        filters = {"season": season} if season else None
+        existing = fetch_all_paginated(
+            client, table, select_cols=select_cols, filters=filters
+        )
+        for rec in existing:
+            key = tuple(rec.get(col) for col in business_key)
+            if all(v is not None for v in key):
+                existing_keys.add(key)
         before = len(records)
         records = [
             r
@@ -144,16 +158,24 @@ def safe_upsert(
         if skipped > 0:
             logger.info(f"    Skipped {skipped} existing records in {table}")
 
-    # Step 3: Upsert in batches
     written = 0
+    failed_batches = 0
     for i in range(0, len(records), BATCH_SIZE):
         batch = records[i : i + BATCH_SIZE]
         try:
             client.table(table).upsert(batch).execute()
             written += len(batch)
         except Exception as e:
-            logger.error(f"    Batch {i // BATCH_SIZE} failed: {e}")
+            failed_batches += 1
+            logger.error(
+                f"    Batch {i // BATCH_SIZE} failed ({len(batch)} records): {e}"
+            )
 
+    if failed_batches:
+        logger.warning(
+            f"    {failed_batches}/{(len(records) + BATCH_SIZE - 1) // BATCH_SIZE} "
+            f"batches failed in {table}"
+        )
     logger.info(f"    Upserted {written} records to {table}")
     return written
 
@@ -177,7 +199,6 @@ def clean_records_for_upload(
     cleaned = []
     for rec in records:
         clean = {k: v for k, v in rec.items() if k not in exclude_columns}
-        # Remove None values so DB defaults are used
         clean = {k: v for k, v in clean.items() if v is not None}
         cleaned.append(clean)
 

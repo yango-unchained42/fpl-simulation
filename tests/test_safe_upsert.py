@@ -1,276 +1,287 @@
-"""Tests for src/utils/safe_upsert.py."""
+"""Tests for src/utils/safe_upsert.py module."""
 
 from __future__ import annotations
 
+import logging
 from unittest.mock import MagicMock, patch
 
 from src.utils.safe_upsert import (
     clean_records_for_upload,
     deduplicate_by_key,
-    load_existing_keys,
     safe_upsert,
+    truncate_table,
 )
+
+# ── deduplicate_by_key ──────────────────────────────────────────────────────
 
 
 class TestDeduplicateByKey:
-    """Tests for deduplicate_by_key function."""
+    def test_basic_dedup_keeps_last(self):
+        records = [
+            {"season": "2024-25", "player_id": 1, "name": "A"},
+            {"season": "2024-25", "player_id": 1, "name": "B"},
+            {"season": "2024-25", "player_id": 2, "name": "C"},
+        ]
+        result = deduplicate_by_key(records, ["season", "player_id"])
+        assert len(result) == 2
+        # Player 1 should keep the last record
+        p1 = [r for r in result if r["player_id"] == 1][0]
+        assert p1["name"] == "B"
 
-    def test_empty_records(self) -> None:
-        result = deduplicate_by_key([], ["season", "fpl_id"])
+    def test_dedup_with_score_column(self):
+        records = [
+            {"id": 1, "score": 0.5, "val": "low"},
+            {"id": 1, "score": 0.9, "val": "high"},
+            {"id": 1, "score": 0.3, "val": "lowest"},
+        ]
+        result = deduplicate_by_key(records, ["id"], score_column="score")
+        assert len(result) == 1
+        assert result[0]["val"] == "high"
+
+    def test_dedup_skips_none_keys(self):
+        records = [
+            {"season": "2024-25", "player_id": None, "name": "A"},
+            {"season": None, "player_id": 1, "name": "B"},
+            {"season": "2024-25", "player_id": 2, "name": "C"},
+        ]
+        result = deduplicate_by_key(records, ["season", "player_id"])
+        assert len(result) == 1
+        assert result[0]["player_id"] == 2
+
+    def test_dedup_empty_list(self):
+        result = deduplicate_by_key([], ["season", "player_id"])
         assert result == []
 
-    def test_no_duplicates(self) -> None:
+    def test_dedup_no_duplicates(self):
         records = [
-            {"season": "2024-25", "fpl_id": 1, "name": "Salah"},
-            {"season": "2024-25", "fpl_id": 2, "name": "Saka"},
+            {"season": "2024-25", "id": 1},
+            {"season": "2024-25", "id": 2},
+            {"season": "2023-24", "id": 1},
         ]
-        result = deduplicate_by_key(records, ["season", "fpl_id"])
-        assert len(result) == 2
+        result = deduplicate_by_key(records, ["season", "id"])
+        assert len(result) == 3
 
-    def test_duplicates_keep_last_without_score(self) -> None:
+    def test_dedup_score_with_none_values(self):
         records = [
-            {"season": "2024-25", "fpl_id": 1, "name": "Salah", "confidence": 0.5},
-            {"season": "2024-25", "fpl_id": 1, "name": "Salah", "confidence": 0.9},
+            {"id": 1, "score": None, "val": "none_score"},
+            {"id": 1, "score": 0.8, "val": "has_score"},
         ]
-        result = deduplicate_by_key(records, ["season", "fpl_id"])
+        result = deduplicate_by_key(records, ["id"], score_column="score")
         assert len(result) == 1
-        assert result[0]["confidence"] == 0.9
+        assert result[0]["val"] == "has_score"
 
-    def test_duplicates_keep_highest_score(self) -> None:
-        records = [
-            {"season": "2024-25", "fpl_id": 1, "data_quality_score": 0.5},
-            {"season": "2024-25", "fpl_id": 1, "data_quality_score": 0.9},
-            {"season": "2024-25", "fpl_id": 1, "data_quality_score": 0.7},
-        ]
-        result = deduplicate_by_key(
-            records, ["season", "fpl_id"], score_column="data_quality_score"
-        )
-        assert len(result) == 1
-        assert result[0]["data_quality_score"] == 0.9
 
-    def test_skips_records_with_null_keys(self) -> None:
-        records = [
-            {"season": "2024-25", "fpl_id": 1, "name": "Salah"},
-            {"season": None, "fpl_id": 2, "name": "Saka"},
-            {"season": "2024-25", "fpl_id": None, "name": "Haaland"},
-        ]
-        result = deduplicate_by_key(records, ["season", "fpl_id"])
-        assert len(result) == 1
-        assert result[0]["fpl_id"] == 1
-
-    def test_multiple_keys(self) -> None:
-        records = [
-            {"season": "2024-25", "fpl_id": 1, "vaastav_id": 10, "score": 0.8},
-            {"season": "2024-25", "fpl_id": 1, "vaastav_id": 10, "score": 0.6},
-            {"season": "2025-26", "fpl_id": 1, "vaastav_id": 10, "score": 0.9},
-        ]
-        result = deduplicate_by_key(
-            records, ["season", "fpl_id", "vaastav_id"], score_column="score"
-        )
-        assert len(result) == 2
-
-    def test_score_column_none_treated_as_zero(self) -> None:
-        records = [
-            {"season": "2024-25", "fpl_id": 1, "score": None},
-            {"season": "2024-25", "fpl_id": 1, "score": 0.5},
-        ]
-        result = deduplicate_by_key(records, ["season", "fpl_id"], score_column="score")
-        assert len(result) == 1
-        assert result[0]["score"] == 0.5
-
-    def test_single_key_column(self) -> None:
-        records = [
-            {"id": 1, "name": "Salah"},
-            {"id": 1, "name": "Mohamed Salah"},
-        ]
-        result = deduplicate_by_key(records, ["id"])
-        assert len(result) == 1
-        assert result[0]["name"] == "Mohamed Salah"
+# ── clean_records_for_upload ────────────────────────────────────────────────
 
 
 class TestCleanRecordsForUpload:
-    """Tests for clean_records_for_upload function."""
-
-    def test_removes_default_columns(self) -> None:
+    def test_removes_default_columns(self):
         records = [
             {
-                "id": 1,
-                "name": "Salah",
+                "name": "Test",
                 "created_at": "2024-01-01",
                 "updated_at": "2024-01-02",
+                "id": 123,
+                "value": 10,
             },
         ]
         result = clean_records_for_upload(records)
         assert len(result) == 1
-        assert "id" not in result[0]
         assert "created_at" not in result[0]
         assert "updated_at" not in result[0]
-        assert result[0]["name"] == "Salah"
+        assert "id" not in result[0]
+        assert result[0]["name"] == "Test"
+        assert result[0]["value"] == 10
 
-    def test_removes_custom_columns(self) -> None:
-        records = [{"id": 1, "name": "Salah", "temp_col": "x"}]
-        result = clean_records_for_upload(records, exclude_columns=["temp_col"])
-        assert "temp_col" not in result[0]
-        assert result[0]["id"] == 1
+    def test_custom_exclude_columns(self):
+        records = [{"a": 1, "b": 2, "c": 3}]
+        result = clean_records_for_upload(records, exclude_columns=["b"])
+        assert result[0] == {"a": 1, "c": 3}
 
-    def test_removes_none_values(self) -> None:
-        records = [
-            {"name": "Salah", "team": None, "position": "MID"},
-        ]
-        result = clean_records_for_upload(records)
-        assert "team" not in result[0]
-        assert result[0]["name"] == "Salah"
-        assert result[0]["position"] == "MID"
+    def test_removes_none_values(self):
+        records = [{"name": "Test", "value": None, "score": 10}]
+        result = clean_records_for_upload(records, exclude_columns=[])
+        assert "value" not in result[0]
+        assert result[0]["score"] == 10
 
-    def test_empty_records(self) -> None:
+    def test_empty_list(self):
         result = clean_records_for_upload([])
         assert result == []
 
-    def test_preserves_non_none_values(self) -> None:
-        records = [
-            {"name": "Salah", "team": "Liverpool", "position": "MID", "score": 0},
-        ]
-        result = clean_records_for_upload(records)
-        assert result[0]["score"] == 0
-        assert result[0]["team"] == "Liverpool"
+    def test_preserves_all_when_no_exclusions(self):
+        records = [{"a": 1, "b": 2}]
+        result = clean_records_for_upload(records, exclude_columns=[])
+        assert result[0] == {"a": 1, "b": 2}
 
 
-class TestLoadExistingKeys:
-    """Tests for load_existing_keys function."""
+# ── truncate_table ──────────────────────────────────────────────────────────
 
-    @patch("src.utils.safe_upsert.fetch_all_paginated")
-    def test_returns_key_set(self, mock_fetch: MagicMock) -> None:
-        mock_fetch.return_value = [
-            {"season": "2024-25", "fpl_id": 1},
-            {"season": "2024-25", "fpl_id": 2},
-        ]
-        client = MagicMock()
-        result = load_existing_keys(
-            client, "silver_player_mapping", ["season", "fpl_id"]
-        )
-        assert result == {("2024-25", 1), ("2024-25", 2)}
 
-    @patch("src.utils.safe_upsert.fetch_all_paginated")
-    def test_skips_null_keys(self, mock_fetch: MagicMock) -> None:
-        mock_fetch.return_value = [
-            {"season": "2024-25", "fpl_id": 1},
-            {"season": None, "fpl_id": 2},
-        ]
-        client = MagicMock()
-        result = load_existing_keys(client, "table", ["season", "fpl_id"])
-        assert result == {("2024-25", 1)}
+class TestTruncateTable:
+    def test_truncate_with_data(self):
+        mock_client = MagicMock()
+        mock_result = MagicMock()
+        mock_result.data = [{"season": "2024-25", "id": 1, "name": "Test"}]
+        mock_client.table.return_value.select.return_value.limit.return_value.execute.return_value = mock_result
 
-    @patch("src.utils.safe_upsert.fetch_all_paginated")
-    def test_with_season_filter(self, mock_fetch: MagicMock) -> None:
-        mock_fetch.return_value = [{"season": "2024-25", "fpl_id": 1}]
-        client = MagicMock()
-        load_existing_keys(client, "table", ["season", "fpl_id"], season="2024-25")
-        mock_fetch.assert_called_once()
-        call_kwargs = mock_fetch.call_args
-        assert call_kwargs[1]["filters"] == {"season": "2024-25"}
+        # Mock the delete chain
+        mock_delete = MagicMock()
+        mock_not = MagicMock()
+        mock_not.is_.return_value = mock_delete
+        mock_delete_chain = MagicMock()
+        mock_delete_chain.not_ = mock_not
+        mock_client.table.return_value.delete.return_value = mock_delete_chain
 
-    @patch("src.utils.safe_upsert.fetch_all_paginated")
-    def test_empty_table(self, mock_fetch: MagicMock) -> None:
-        mock_fetch.return_value = []
-        client = MagicMock()
-        result = load_existing_keys(client, "table", ["season", "fpl_id"])
-        assert result == set()
+        truncate_table(mock_client, "test_table")
+
+        mock_client.table.assert_any_call("test_table")
+        mock_delete_chain.not_.is_.assert_called_once()
+
+    def test_truncate_empty_table(self):
+        mock_client = MagicMock()
+        mock_result = MagicMock()
+        mock_result.data = []
+        mock_client.table.return_value.select.return_value.limit.return_value.execute.return_value = mock_result
+
+        truncate_table(mock_client, "empty_table")
+
+        # Should not attempt delete when table is empty
+        mock_client.table.return_value.delete.assert_not_called()
+
+    @patch("src.utils.safe_upsert.os.getenv")
+    @patch("src.utils.safe_upsert.subprocess.run")
+    def test_truncate_fallback_to_cli(self, mock_run, mock_getenv):
+        mock_client = MagicMock()
+        mock_probe_result = MagicMock()
+        mock_probe_result.data = [{"col": "val"}]
+        mock_client.table.return_value.select.return_value.limit.return_value.execute.return_value = mock_probe_result
+        # Make delete raise an error
+        mock_client.table.return_value.delete.side_effect = Exception("Table not found")
+        mock_getenv.return_value = "fake-token"
+
+        truncate_table(mock_client, "test_table")
+
+        mock_run.assert_called_once()
+        call_args = mock_run.call_args
+        assert "TRUNCATE test_table CASCADE;" in call_args[0][0]
+
+
+# ── safe_upsert ─────────────────────────────────────────────────────────────
 
 
 class TestSafeUpsert:
-    """Tests for safe_upsert function."""
-
-    def test_empty_records(self) -> None:
-        client = MagicMock()
-        result = safe_upsert(client, "table", [], ["season", "fpl_id"])
+    def test_empty_records_returns_zero(self):
+        mock_client = MagicMock()
+        result = safe_upsert(mock_client, "test_table", [], ["season", "id"])
         assert result == 0
 
+    def test_basic_upsert(self):
+        mock_client = MagicMock()
+        mock_client.table.return_value.upsert.return_value.execute.return_value = (
+            MagicMock()
+        )
+
+        records = [
+            {"season": "2024-25", "id": 1, "value": 10},
+            {"season": "2024-25", "id": 2, "value": 20},
+        ]
+        result = safe_upsert(mock_client, "test_table", records, ["season", "id"])
+
+        assert result == 2
+        mock_client.table.return_value.upsert.assert_called_once()
+
+    def test_deduplicates_before_upsert(self):
+        mock_client = MagicMock()
+        mock_client.table.return_value.upsert.return_value.execute.return_value = (
+            MagicMock()
+        )
+
+        records = [
+            {"season": "2024-25", "id": 1, "score": 0.5},
+            {"season": "2024-25", "id": 1, "score": 0.9},
+            {"season": "2024-25", "id": 2, "score": 0.7},
+        ]
+        result = safe_upsert(
+            mock_client,
+            "test_table",
+            records,
+            ["season", "id"],
+            score_column="score",
+        )
+
+        assert result == 2
+        # Verify the upserted batch has deduplicated records
+        upserted = mock_client.table.return_value.upsert.call_args[0][0]
+        assert len(upserted) == 2
+
     @patch("src.utils.safe_upsert.BATCH_SIZE", 2)
-    def test_upserts_in_batches(self) -> None:
-        client = MagicMock()
-        records = [
-            {"season": "2024-25", "fpl_id": 1, "name": "A"},
-            {"season": "2024-25", "fpl_id": 2, "name": "B"},
-            {"season": "2024-25", "fpl_id": 3, "name": "C"},
-        ]
-        result = safe_upsert(client, "table", records, ["season", "fpl_id"])
-        assert result == 3
-        assert (
-            client.table.return_value.upsert.call_count == 2
-        )  # 3 records / batch_size 2 = 2 batches
-
-    @patch("src.utils.safe_upsert.BATCH_SIZE", 10)
-    def test_batch_failure_does_not_stop(self) -> None:
-        client = MagicMock()
-        client.table.return_value.upsert.return_value.execute.side_effect = Exception(
-            "fail"
+    def test_batching(self):
+        mock_client = MagicMock()
+        mock_client.table.return_value.upsert.return_value.execute.return_value = (
+            MagicMock()
         )
 
-        records = [{"season": "2024-25", "fpl_id": 1, "name": "A"}]
-        result = safe_upsert(client, "table", records, ["season", "fpl_id"])
-        assert result == 0  # batch failed, so 0 written
+        records = [{"season": "2024-25", "id": i, "value": i} for i in range(5)]
+        result = safe_upsert(mock_client, "test_table", records, ["season", "id"])
 
-    @patch("src.utils.safe_upsert.BATCH_SIZE", 10)
-    def test_deduplication_applied(self) -> None:
-        client = MagicMock()
-        records = [
-            {"season": "2024-25", "fpl_id": 1, "data_quality_score": 0.5},
-            {"season": "2024-25", "fpl_id": 1, "data_quality_score": 0.9},
-        ]
-        result = safe_upsert(
-            client,
-            "table",
-            records,
-            ["season", "fpl_id"],
-            score_column="data_quality_score",
-        )
-        assert result == 1  # deduped to 1 record
+        assert result == 5
+        assert mock_client.table.return_value.upsert.call_count == 3  # ceil(5/2)
 
-    @patch("src.utils.safe_upsert.fetch_all_paginated")
-    @patch("src.utils.safe_upsert.BATCH_SIZE", 10)
-    def test_skip_existing(self, mock_fetch: MagicMock) -> None:
-        mock_fetch.return_value = [{"season": "2024-25", "fpl_id": 1}]
-        client = MagicMock()
-        records = [
-            {"season": "2024-25", "fpl_id": 1, "name": "A"},  # exists, skip
-            {"season": "2024-25", "fpl_id": 2, "name": "B"},  # new, upload
-        ]
-        result = safe_upsert(
-            client,
-            "table",
-            records,
-            ["season", "fpl_id"],
-            skip_existing=True,
-        )
-        assert result == 1
-        # Only 1 record should have been upserted
-        upserted_batch = client.table.return_value.upsert.call_args[0][0]
-        assert len(upserted_batch) == 1
-        assert upserted_batch[0]["fpl_id"] == 2
-
-    @patch("src.utils.safe_upsert.BATCH_SIZE", 10)
-    def test_partial_batch_failure(self) -> None:
-        """Test that only successful batches count toward written total."""
-        client = MagicMock()
+    @patch("src.utils.safe_upsert.BATCH_SIZE", 2)
+    def test_batch_failure_logged_and_continues(self, caplog):
+        mock_client = MagicMock()
         call_count = 0
 
         def upsert_side_effect(*args, **kwargs):
             nonlocal call_count
             call_count += 1
-            mock = MagicMock()
             if call_count == 1:
-                mock.execute.return_value = None  # success
-            else:
-                mock.execute.side_effect = Exception("batch 2 failed")
-            return mock
+                raise Exception("Network error")
+            mock_result = MagicMock()
+            mock_result.execute.return_value = MagicMock()
+            return mock_result
 
-        client.table.return_value.upsert.side_effect = upsert_side_effect
+        mock_client.table.return_value.upsert.side_effect = upsert_side_effect
 
-        with patch("src.utils.safe_upsert.BATCH_SIZE", 2):
-            records = [
-                {"season": "2024-25", "fpl_id": 1, "name": "A"},
-                {"season": "2024-25", "fpl_id": 2, "name": "B"},
-                {"season": "2024-25", "fpl_id": 3, "name": "C"},
+        records = [
+            {"season": "2024-25", "id": 1, "value": 1},
+            {"season": "2024-25", "id": 2, "value": 2},
+            {"season": "2024-25", "id": 3, "value": 3},
+            {"season": "2024-25", "id": 4, "value": 4},
+        ]
+        with caplog.at_level(logging.ERROR):
+            result = safe_upsert(mock_client, "test_table", records, ["season", "id"])
+
+        # First batch (2 records) fails, second batch (2 records) succeeds
+        assert result == 2
+        assert "failed" in caplog.text.lower()
+
+    def test_skip_existing(self):
+        mock_client = MagicMock()
+
+        # Mock fetch_all_paginated to return existing keys
+        with patch("src.utils.safe_upsert.fetch_all_paginated") as mock_fetch:
+            mock_fetch.return_value = [
+                {"season": "2024-25", "id": 1},
             ]
-            result = safe_upsert(client, "table", records, ["season", "fpl_id"])
-            assert result == 2  # only first batch succeeded
+            mock_client.table.return_value.upsert.return_value.execute.return_value = (
+                MagicMock()
+            )
+
+            records = [
+                {"season": "2024-25", "id": 1, "value": 10},  # existing
+                {"season": "2024-25", "id": 2, "value": 20},  # new
+            ]
+            result = safe_upsert(
+                mock_client,
+                "test_table",
+                records,
+                ["season", "id"],
+                season="2024-25",
+                skip_existing=True,
+            )
+
+            assert result == 1
+            upserted = mock_client.table.return_value.upsert.call_args[0][0]
+            assert len(upserted) == 1
+            assert upserted[0]["id"] == 2

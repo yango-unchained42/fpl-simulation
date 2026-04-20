@@ -106,8 +106,14 @@ data/raw/**/*.parquet
 data/processed/**/*.parquet
 data/processed/**/*.csv
 
+# Supabase CLI temp files (contain project refs / credentials)
+supabase/.temp/
+
 # Model artefacts are committed (required for Streamlit Cloud)
 # data/models/*.joblib  <-- NOT gitignored
 
 # Outputs
 outputs/predictions_export/
+
+# Supabase local temp files (contain project refs)
+supabase/.temp/
