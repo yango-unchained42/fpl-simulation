@@ -8,8 +8,8 @@ import polars as pl
 import pytest
 
 from src.silver.player_mapping import (
-    HIGH_CONFIDENCE_THRESHOLD,
-    LOW_CONFIDENCE_THRESHOLD,
+    HIGH_CONFIDENCE,
+    LOW_CONFIDENCE,
     build_season_mappings,
     match_players_with_team,
     standardize_player_names,
@@ -144,7 +144,7 @@ class TestMatchPlayersWithTeam:
         assert result.shape[0] == 1
         assert result["matched_id"][0] is None
         # Confidence should be low (< threshold) for no match
-        assert result["confidence"][0] < LOW_CONFIDENCE_THRESHOLD
+        assert result["confidence"][0] < LOW_CONFIDENCE
 
     def test_no_team_column(self):
         """Test matching without team column."""
@@ -228,9 +228,9 @@ class TestConfidenceThresholds:
 
     def test_threshold_values(self):
         """Test that threshold values are sensible."""
-        assert HIGH_CONFIDENCE_THRESHOLD > LOW_CONFIDENCE_THRESHOLD
-        assert HIGH_CONFIDENCE_THRESHOLD <= 1.0
-        assert LOW_CONFIDENCE_THRESHOLD >= 0.0
+        assert HIGH_CONFIDENCE > LOW_CONFIDENCE
+        assert HIGH_CONFIDENCE <= 1.0
+        assert LOW_CONFIDENCE >= 0.0
 
 
 class TestNameMatchingEdgeCases:
