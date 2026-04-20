@@ -27,12 +27,13 @@ from typing import Any
 import polars as pl
 from dotenv import load_dotenv
 
-from src.config import ALL_SEASONS
-from src.data.database import get_supabase_client, write_to_supabase
+from src.config import ALL_SEASONS, CURRENT_SEASON
+from src.data.database import get_supabase_client
 from src.utils.name_resolver import (
     build_name_mapping,
     standardize_name,
 )
+from src.utils.safe_upsert import clean_records_for_upload, safe_upsert
 from src.utils.supabase_utils import fetch_all_paginated
 
 logger = logging.getLogger(__name__)
@@ -85,9 +86,11 @@ def _normalize_position(pos: str | None) -> str:
 
 def get_season_sources(season: str) -> dict:
     """Determine which data sources are available for a season."""
+    # Historical seasons available from Vaastav (all except current)
+    historical_seasons = [s for s in ALL_SEASONS if s != CURRENT_SEASON]
     sources = {
-        "fpl": season == "2025-26",  # FPL only has current season
-        "vaastav": season in ["2021-22", "2022-23", "2023-24", "2024-25"],
+        "fpl": season == CURRENT_SEASON,  # FPL only has current season
+        "vaastav": season in historical_seasons,
         "understat": True,  # Understat has all seasons
     }
     return sources
@@ -95,7 +98,7 @@ def get_season_sources(season: str) -> dict:
 
 def get_season_source_type(season: str) -> str:
     """Get the primary source type for a season (for team name lookup)."""
-    if season == "2025-26":
+    if season == CURRENT_SEASON:
         return "fpl"
     return "vaastav"
 
@@ -828,7 +831,7 @@ def build_all_season_mappings() -> pl.DataFrame:
         if "team" in df.columns and "season" in df.columns:
             # Add source_type column based on season
             df = df.with_columns(
-                pl.when(pl.col("season") == "2025-26")
+                pl.when(pl.col("season") == CURRENT_SEASON)
                 .then(pl.lit("fpl"))
                 .otherwise(pl.lit("vaastav"))
                 .alias("source_type")
@@ -858,37 +861,39 @@ def build_all_season_mappings() -> pl.DataFrame:
 
 
 def upload_to_supabase(mappings: pl.DataFrame) -> int:
-    """Upload mappings to Supabase silver_player_mapping table."""
+    """Upload mappings to Supabase silver_player_mapping table.
+
+    Uses safe_upsert with deduplication by (season, fpl_id) business key.
+    No longer deletes all rows before inserting — safe for concurrent access.
+
+    Args:
+        mappings: DataFrame with player mapping records.
+
+    Returns:
+        Number of records written.
+    """
     client = get_supabase()
 
-    # Prepare records - handle UUID for unified_player_id
-    records = mappings.to_dicts()
+    # Prepare records — strip server-managed columns
+    records = clean_records_for_upload(mappings.to_dicts())
     total = len(records)
 
     logger.info(f"Uploading {total} player mappings to Supabase...")
 
-    # Clear the table first to avoid duplicates from new UUIDs being generated
-    # This is safe because we're regenerating all mappings from scratch
-    logger.info("Clearing existing mappings...")
-    client.table("silver_player_mapping").delete().neq(
-        "unified_player_id", "00000000-0000-0000-0000-000000000000"
-    ).execute()
-
-    # Use the existing write_to_supabase function with insert (not upsert since we cleared)
-    success = write_to_supabase(
+    written = safe_upsert(
+        client,
         "silver_player_mapping",
-        mappings,
-        client=client,
-        upsert=False,
+        records,
+        business_key=["season", "fpl_id"],
+        score_column=None,  # No data_quality_score column — keep last dedup wins
     )
 
-    if success:
-        logger.info(f"Successfully uploaded {total} player mappings")
+    if written:
+        logger.info(f"Successfully uploaded {written} player mappings")
     else:
         logger.error("Failed to upload player mappings")
-        total = 0
 
-    return total
+    return written
 
 
 def run() -> None:
