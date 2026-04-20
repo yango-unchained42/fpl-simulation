@@ -30,9 +30,6 @@ jobs:
       - name: Run Ruff
         run: ruff check src/ tests/ scripts/
 
-      - name: Run Ruff format check
-        run: ruff format --check src/ tests/ scripts/
-
       - name: Run Black check
         run: black --check src/ tests/ scripts/
 
