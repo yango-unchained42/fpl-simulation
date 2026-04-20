@@ -2,9 +2,17 @@
 
 from __future__ import annotations
 
-import polars as pl
+import os
 
-from src.data.team_mappings import (
+import polars as pl
+import pytest
+
+DATA_PATH = "data/raw/team_mappings.csv"
+needs_data = pytest.mark.skipif(
+    not os.path.exists(DATA_PATH), reason=f"{DATA_PATH} not found"
+)
+
+from src.data.team_mappings import (  # noqa: E402
     create_fpl_mappings,
     create_understat_mappings,
     create_vaastav_mappings,
@@ -15,6 +23,7 @@ from src.data.team_mappings import (
 )
 
 
+@needs_data
 class TestLoadTeamMappings:
     """Tests for load_team_mappings function."""
 
@@ -52,6 +61,7 @@ class TestLoadTeamMappings:
         assert "vaastav" in sources
 
 
+@needs_data
 class TestGetFplTeamId:
     """Tests for get_fpl_team_id function."""
 
@@ -78,6 +88,7 @@ class TestGetFplTeamId:
         assert result is None
 
 
+@needs_data
 class TestGetUnderstatTeamId:
     """Tests for get_understat_team_id function."""
 
@@ -93,6 +104,7 @@ class TestGetUnderstatTeamId:
         assert result is None
 
 
+@needs_data
 class TestGetVaastavTeamName:
     """Tests for get_vaastav_team_name function."""
 
@@ -113,6 +125,7 @@ class TestGetVaastavTeamName:
         assert result is None
 
 
+@needs_data
 class TestCreateFplMappings:
     """Tests for create_fpl_mappings function."""
 
@@ -150,6 +163,7 @@ class TestCreateFplMappings:
             assert col in result.columns, f"Missing column: {col}"
 
 
+@needs_data
 class TestCreateUnderstatMappings:
     """Tests for create_understat_mappings function."""
 
@@ -180,6 +194,7 @@ class TestCreateUnderstatMappings:
         assert result.shape[0] == 1  # Only mapped team included
 
 
+@needs_data
 class TestCreateVaastavMappings:
     """Tests for create_vaastav_mappings function."""
 

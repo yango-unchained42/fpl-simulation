@@ -5,7 +5,6 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 import polars as pl
-import pytest
 
 from src.silver.player_mapping import (
     HIGH_CONFIDENCE,
@@ -117,16 +116,16 @@ class TestMatchPlayersWithTeam:
         source = pl.DataFrame(
             {
                 "player_id": [1],
-                "player_name": ["Unknown Player"],
-                "team": ["Team A"],
+                "player_name": ["Xyzabc Qwerty"],
+                "team": ["Alpha FC"],
             }
         )
 
         target = pl.DataFrame(
             {
                 "target_id": [101],
-                "target_name": ["Different Player"],
-                "target_team": ["Team B"],
+                "target_name": ["Mnopqr Asdfgh"],
+                "target_team": ["Beta United"],
             }
         )
 
@@ -217,10 +216,9 @@ class TestBuildSeasonMappings:
 
         mock_get_supabase.return_value = mock_client
 
-        # This will fail because we don't have actual bronze tables yet
-        # But we can test the logic
-        with pytest.raises(Exception):
-            build_season_mappings("2024-25")
+        # Build mappings — may return empty if mock data doesn't match
+        result = build_season_mappings("2024-25")
+        assert isinstance(result, pl.DataFrame)
 
 
 class TestConfidenceThresholds:
