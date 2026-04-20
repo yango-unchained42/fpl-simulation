@@ -122,7 +122,9 @@ class TestTruncateTable:
         mock_client = MagicMock()
         mock_result = MagicMock()
         mock_result.data = [{"season": "2024-25", "id": 1, "name": "Test"}]
-        mock_client.table.return_value.select.return_value.limit.return_value.execute.return_value = mock_result
+        mock_client.table.return_value.select.return_value.limit.return_value.execute.return_value = (
+            mock_result
+        )
 
         # Mock the delete chain
         mock_delete = MagicMock()
@@ -141,7 +143,9 @@ class TestTruncateTable:
         mock_client = MagicMock()
         mock_result = MagicMock()
         mock_result.data = []
-        mock_client.table.return_value.select.return_value.limit.return_value.execute.return_value = mock_result
+        mock_client.table.return_value.select.return_value.limit.return_value.execute.return_value = (
+            mock_result
+        )
 
         truncate_table(mock_client, "empty_table")
 
@@ -154,7 +158,9 @@ class TestTruncateTable:
         mock_client = MagicMock()
         mock_probe_result = MagicMock()
         mock_probe_result.data = [{"col": "val"}]
-        mock_client.table.return_value.select.return_value.limit.return_value.execute.return_value = mock_probe_result
+        mock_client.table.return_value.select.return_value.limit.return_value.execute.return_value = (
+            mock_probe_result
+        )
         # Make delete raise an error
         mock_client.table.return_value.delete.side_effect = Exception("Table not found")
         mock_getenv.return_value = "fake-token"
