@@ -111,3 +111,6 @@ data/processed/**/*.csv
 
 # Outputs
 outputs/predictions_export/
+
+# Supabase local temp files (contain project refs)
+supabase/.temp/
