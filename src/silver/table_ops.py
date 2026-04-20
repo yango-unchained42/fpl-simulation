@@ -143,5 +143,9 @@ def resolve_uuids(
 
     # 2. Use generic update function
     return update_table_from_lookup(
-        client, target_table, lookup, target_join_cols, target_update_col  # type: ignore[arg-type]
+        client,
+        target_table,
+        lookup,
+        target_join_cols,
+        target_update_col,  # type: ignore[arg-type]
     )
