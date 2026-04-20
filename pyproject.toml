@@ -90,14 +90,8 @@ python_version = "3.11"
 ignore_missing_imports = true
 warn_return_any = false
 warn_unused_configs = true
-<<<<<<< Updated upstream
 check_untyped_defs = true
 disable_error_code = ["attr-defined", "no-untyped-call", "no-untyped-def", "type-arg", "no-any-return", "unused-ignore", "misc", "arg-type"]
-=======
-disallow_untyped_defs = false
-disallow_untyped_calls = false
-check_untyped_defs = true
->>>>>>> Stashed changes
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
