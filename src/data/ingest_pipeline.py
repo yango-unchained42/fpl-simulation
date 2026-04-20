@@ -262,7 +262,7 @@ def run_ingestion_pipeline(
 
     # Understat uses ALL_SEASONS by default — cache handles deduplication
     # so re-fetching existing seasons just loads from cache (no network)
-    from src.data.ingest_understat import ALL_SEASONS as UNDERSTAT_ALL_SEASONS
+    from src.data.ingest_understat import ALL_SEASONS as UNDERSTAT_ALL_SEASONS  # type: ignore[attr-defined]
 
     # Use all Understat seasons if user didn't specify custom ones
     understat_seasons = UNDERSTAT_ALL_SEASONS if seasons is None else seasons
@@ -481,7 +481,7 @@ def main() -> None:
 
     # Daily mode: FPL + current Understat only, skip Vaastav (historical/static)
     if args.daily:
-        from src.data.ingest_understat import CURRENT_SEASON
+        from src.data.ingest_understat import CURRENT_SEASON  # type: ignore[attr-defined]
 
         args.sources = ["fpl", "understat"]
         args.seasons = [CURRENT_SEASON]

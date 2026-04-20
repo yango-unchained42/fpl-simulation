@@ -91,7 +91,7 @@ def update_table_from_lookup(
     updates = []
     for r in data:
         key = tuple(r.get(k) for k in join_keys)
-        new_val = lookup.get(key)
+        new_val = lookup.get(key)  # type: ignore[arg-type]
 
         if new_val and r.get(update_col) is None:
             updates.append({**r, update_col: new_val})
@@ -143,5 +143,5 @@ def resolve_uuids(
 
     # 2. Use generic update function
     return update_table_from_lookup(
-        client, target_table, lookup, target_join_cols, target_update_col
+        client, target_table, lookup, target_join_cols, target_update_col  # type: ignore[arg-type]
     )

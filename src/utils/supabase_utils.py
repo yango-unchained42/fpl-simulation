@@ -1,3 +1,4 @@
+from collections.abc import Generator
 """Supabase utility functions for pagination and data access.
 
 Handles the PostgREST 1000 row limit by using pagination strategies.
