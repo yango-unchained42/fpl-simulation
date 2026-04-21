@@ -146,20 +146,52 @@ def update_understat_match_stats(client: Any, season: str = CURRENT_SEASON) -> b
         game_id = rec.get("game_id")
         match_id = match_lookup.get((season, int(game_id))) if game_id else None
 
-        home_id_str = str(rec.get("home_id", ""))
-        away_id_str = str(rec.get("away_id", ""))
+        home_id_str = str(rec.get("home_team_id") or rec.get("home_id", ""))
+        away_id_str = str(rec.get("away_team_id") or rec.get("away_id", ""))
 
         filtered = {
+            "match_id": match_id,
+            "game_id": game_id,
             "season": season,
+            "date": rec.get("date"),
             "home_team_id": team_lookup.get((season, home_id_str)),
             "away_team_id": team_lookup.get((season, away_id_str)),
-            "home_goals": rec.get("h_goals"),
-            "away_goals": rec.get("a_goals"),
+            "home_team": rec.get("home_team"),
+            "away_team": rec.get("away_team"),
+            "home_team_code": rec.get("home_team_code"),
+            "away_team_code": rec.get("away_team_code"),
+            "home_goals": rec.get("home_goals") or rec.get("h_goals"),
+            "away_goals": rec.get("away_goals") or rec.get("a_goals"),
             "home_xg": rec.get("home_xg") or rec.get("h_xg"),
             "away_xg": rec.get("away_xg") or rec.get("a_xg"),
-            "date": rec.get("date"),
-            "game_id": game_id,
+            "home_np_xg": rec.get("home_np_xg"),
+            "away_np_xg": rec.get("away_np_xg"),
+            "home_np_xg_difference": rec.get("home_np_xg_difference"),
+            "away_np_xg_difference": rec.get("away_np_xg_difference"),
+            "home_ppda": rec.get("home_ppda"),
+            "away_ppda": rec.get("away_ppda"),
+            "home_deep_completions": rec.get("home_deep_completions"),
+            "away_deep_completions": rec.get("away_deep_completions"),
+            "home_expected_points": rec.get("home_expected_points"),
+            "away_expected_points": rec.get("away_expected_points"),
+            "home_points": rec.get("home_points"),
+            "away_points": rec.get("away_points"),
+            "home_shots": rec.get("home_shots"),
+            "away_shots": rec.get("away_shots"),
+            "home_xa": rec.get("home_xa"),
+            "away_xa": rec.get("away_xa"),
+            "home_key_passes": rec.get("home_key_passes"),
+            "away_key_passes": rec.get("away_key_passes"),
+            "home_yellow_cards": rec.get("home_yellow_cards"),
+            "away_yellow_cards": rec.get("away_yellow_cards"),
+            "home_red_cards": rec.get("away_red_cards"),
+            "away_red_cards": rec.get("away_red_cards"),
+            "league_id": rec.get("league_id"),
+            "season_id": rec.get("season_id"),
         }
+
+        # Remove None values so DB handles defaults
+        filtered = {k: v for k, v in filtered.items() if v is not None}
 
         if match_id:
             transformed.append(filtered)
