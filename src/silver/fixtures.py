@@ -114,4 +114,68 @@ def update_fixtures(client: Any, season: str = CURRENT_SEASON) -> bool:
         ).execute()
 
     logger.info(f"    Updated {len(transformed)} fixtures")
+
+    # Aggregate defensive stats from player stats
+    _update_fixture_defensive_stats(client, season)
+
     return True
+
+
+def _update_fixture_defensive_stats(client: Any, season: str) -> None:
+    """Aggregate per-team defensive stats from player stats into fixtures."""
+    logger.info("    Aggregating fixture defensive stats...")
+
+    # Fetch all player stats for this season
+    player_stats = fetch_all_paginated(
+        client,
+        "silver_fpl_player_stats",
+        select_cols="match_id,was_home,tackles,clearances_blocks_interceptions,recoveries,defensive_contribution,saves",
+        filters={"season": season},
+    )
+
+    if not player_stats:
+        logger.info("    No player stats to aggregate")
+        return
+
+    # Aggregate by (match_id, was_home)
+    from collections import defaultdict
+
+    agg: dict[tuple, dict] = defaultdict(
+        lambda: {
+            "tackles": 0,
+            "cbi": 0,
+            "recoveries": 0,
+            "def_con": 0,
+            "saves": 0,
+        }
+    )
+    for rec in player_stats:
+        key = (rec["match_id"], rec["was_home"])
+        agg[key]["tackles"] += rec.get("tackles") or 0
+        agg[key]["cbi"] += rec.get("clearances_blocks_interceptions") or 0
+        agg[key]["recoveries"] += rec.get("recoveries") or 0
+        agg[key]["def_con"] += rec.get("defensive_contribution") or 0
+        agg[key]["saves"] += rec.get("saves") or 0
+
+    # Update fixtures with aggregated stats
+    updated = 0
+    for (match_id, was_home), stats in agg.items():
+        # was_home=True → team_h stats, was_home=False → team_a stats
+        prefix = "team_h" if was_home else "team_a"
+        update_data = {
+            f"{prefix}_tackles": stats["tackles"],
+            f"{prefix}_clearances_blocks_interceptions": stats["cbi"],
+            f"{prefix}_recoveries": stats["recoveries"],
+            f"{prefix}_defensive_contribution": stats["def_con"],
+            f"{prefix}_saves": stats["saves"],
+        }
+
+        try:
+            client.table("silver_fixtures").update(update_data).eq(
+                "match_id", match_id
+            ).execute()
+            updated += 1
+        except Exception as e:
+            logger.warning(f"    Failed to update fixture {match_id}: {e}")
+
+    logger.info(f"    Updated defensive stats for {updated} fixture sides")
