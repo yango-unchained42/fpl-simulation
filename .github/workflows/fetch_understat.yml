@@ -20,8 +20,8 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
-        token: ${{ secrets.PERSONAL_TOKEN }}  # Use a token with write access
-        fetch-depth: 0  # Fetch all history for proper commits
+        token: ${{ secrets.PERSONAL_TOKEN }}
+        fetch-depth: 0
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -35,6 +35,8 @@ jobs:
 
     - name: Fetch historical Understat data
       run: |
+        # Set verbose logging
+        export SOCCERDATA_LOG_LEVEL=DEBUG
         cd scripts
         python fetch_historical_understat.py --seasons ${{ inputs.seasons }} --delay ${{ inputs.delay }} --data-dir ../data/raw/understat
       env:
