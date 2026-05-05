@@ -1,59 +1,8 @@
-name: Fetch Historical Understat Data
-
-on:
-  workflow_dispatch:
-    inputs:
-      seasons:
-        description: 'Seasons to fetch (e.g., 2020-21 2021-22 2022-23 2023-24 2024-25 or all)'
-        required: false
-        default: 'all'
-      delay:
-        description: 'Delay in seconds between season fetches (default: 10)'
-        required: false
-        default: '10'
-
-jobs:
-  fetch-understat:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        token: ${{ secrets.PERSONAL_TOKEN }}
-        fetch-depth: 0
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install polars soccerdata
-
-    - name: Fetch historical Understat data
-      run: |
-        # Set verbose logging
-        export SOCCERDATA_LOG_LEVEL=DEBUG
-        cd scripts
-        python fetch_historical_understat.py --seasons ${{ inputs.seasons }} --delay ${{ inputs.delay }} --data-dir ../data/raw/understat
-      env:
-        # Set environment variables if needed
-        SOCCERDATA_DIR: ${{ github.workspace }}
-
-    - name: Commit and push changes
-      run: |
-        git config --local user.email "hermes@workflow"
-        git config --local user.name "Hermes Agent"
-        git add data/raw/understat/
-        # Only commit if there are changes
-        if git diff-index --quiet HEAD --; then
-          echo "No changes to commit"
-        else
-          git commit -m "Update historical Understat data [automated]" || echo "Commit failed, continuing"
-          git push origin HEAD:${{ github.ref }}
-        fi
-      env:
-        PERSONAL_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+- name: Fetch historical Understat data
+        run: |
+          cd scripts
+          # Run the script and capture output to a log file
+          python fetch_historical_understat.py --seasons ${{ inputs.seasons }} --delay ${{ inputs.delay }} --data-dir ../data/raw/understat 2>&1 | tee ../../understat_fetch.log
+        env:
+          # Set environment variables if needed
+          SOCCERDATA_DIR: ${{ github.workspace }}
