@@ -1,5 +1,6 @@
 - name: Fetch historical Understat data
         run: |
+          set -e  # Exit on error
           cd scripts
           # Run the script and capture output to a log file
           python fetch_historical_understat.py --seasons ${{ inputs.seasons }} --delay ${{ inputs.delay }} --data-dir ../data/raw/understat 2>&1 | tee ../../understat_fetch.log
